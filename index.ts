@@ -66,6 +66,27 @@ class IpcRendererWorker {
     };
     yzb.native.sendProcessMessage(data);
   }
+
+  promiseSend(topic: string, topicData: any) {
+    return new Promise((resolve, reject) => {
+      const data = {
+        data: {
+          process_name: this.exeName,
+          message: {
+            topic,
+            data: topicData
+          },
+        },
+        next: (result: any) => {
+          resolve(result);
+        },
+        error: (error: any) => {
+          reject(error);
+        }
+      };
+      yzb.native.sendProcessMessage(data);
+    });
+  }
 }
 
 class IpcRenderer {
