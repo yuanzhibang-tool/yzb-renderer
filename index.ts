@@ -1,61 +1,21 @@
-class IpcSender {
-  // 用以进行回调的识别字符串
-  identity: string;
-  constructor(identity: string) {
-    this.identity = identity;
-  }
-  // 结果回调
-  next = (result: any = null) => {
-    this.sendMessageWithType('next', result);
-  };
-  // 错误回调
-  error = (error: any = null) => {
-    this.sendMessageWithType('error', error);
-  };
+declare const yzb: any;
 
-  sendMessageWithType(type: string, result: any) {
-    const message = {
-      __type: 'yzb_ipc_message',
-      identity: this.identity,
-      data: result,
-      type,
-    };
-    if (process.send) {
-      process.send(message);
-    }
-  }
-}
-class IpcNode {
+class IpcRendererWorker {
+  exeName: string;
   messageCallbackMap = new Map();
   onceMessageCallbackMap = new Map();
-  constructor() {
-    process.on('message', (messageObject: any) => {
-      if (messageObject !== null && typeof messageObject === 'object') {
-        if (messageObject.hasOwnProperty('__type')) {
-          const messageType = messageObject.__type;
-          if (messageType === 'yzb_ipc_message') {
-            // 此为ipc消息类型
-            const messageIdentity = messageObject.identity;
-            const data = messageObject.data;
-            const messageTopic = data.topic;
-            const messageTopicData = data.data;
-            // 查找对应的回调,有则执行,无则不执行
-            const sender = new IpcSender(messageIdentity);
-            if (this.messageCallbackMap.has(messageTopic)) {
-              const callback = this.messageCallbackMap.get(messageTopic);
-              callback(sender, messageTopicData);
-            } else if (this.onceMessageCallbackMap.has(messageTopic)) {
-              const callback = this.messageCallbackMap.get(messageTopic);
-              callback(sender, messageTopicData);
-              // 执行完毕后,清除回调
-              this.onceMessageCallbackMap.delete(messageTopic);
-            } else {
-              // 没有回调可执行
-            }
-          }
-        }
-      }
-    });
+
+  constructor(exeName: string) {
+    this.exeName = exeName;
+  }
+  onMessage(topic: string, message: any) {
+    if (this.messageCallbackMap.has(topic)) {
+      const callback = this.messageCallbackMap.get(topic);
+      callback(message);
+    } else if (this.onceMessageCallbackMap.has(topic)) {
+      const callback = this.onceMessageCallbackMap.get(topic);
+      callback(message);
+    } else { }
   }
   on(topic: string, callback: () => {}) {
     if (
@@ -75,7 +35,92 @@ class IpcNode {
     }
     this.onceMessageCallbackMap.set(topic, callback);
   }
-  send(topic: string, topicData: any) {}
+  removeListener(topic: string) {
+    this.messageCallbackMap.delete(topic);
+    this.onceMessageCallbackMap.delete(topic);
+  }
+  send(topic: string, topicData: any, nextCallback: any, errorCallbck: any, completeCallback: any) {
+    const data = {
+      data: {
+        process_name: this.exeName,
+        message: {
+          topic,
+          data: topicData
+        },
+      },
+      next: (result: any) => {
+        if (nextCallback) {
+          nextCallback(result);
+        }
+      },
+      error: (error: any) => {
+        if (errorCallbck) {
+          errorCallbck(error);
+        }
+      },
+      complete: () => {
+        if (completeCallback) {
+          completeCallback();
+        }
+      }
+    };
+    yzb.native.sendProcessMessage(data);
+  }
 }
 
-module.exports = { ipc: new IpcNode() };
+class IpcRenderer {
+  messageWorkerMap = new Map();
+  otherMessageCallback: ((message: any) => {}) | null = null;
+  constructor() {
+    if (typeof yzb === 'undefined') {
+      throw new Error("yzb is not found, please read the document.");
+    }
+    const data = {
+      data: {},
+      next: (messageObject: any) => {
+        if (messageObject !== null && typeof messageObject === 'object') {
+          const exeName = messageObject.name;
+          const type = messageObject.type;
+          if (type === 'yzb_ipc_renderer_message') {
+            // 此为ipc消息类型
+            const messageData = messageObject.data;
+            const messageTopic = messageData.topic;
+            const messageTopicData = messageData.data;
+            // 查找对应的回调,有则执行,无则不执行
+            if (this.messageWorkerMap.has(exeName)) {
+              const worker = this.messageWorkerMap.get(exeName);
+              if (worker !== null && typeof worker === 'object') {
+                worker.onMessage(messageTopic, messageTopicData);
+              } else {
+                this.messageWorkerMap.delete(exeName);
+              }
+            } else {
+              // 没有回调可执行
+            }
+          } else {
+            if (this.otherMessageCallback) {
+              this.otherMessageCallback(messageObject);
+            }
+          }
+        } else {
+          if (this.otherMessageCallback) {
+            this.otherMessageCallback(messageObject);
+          }
+        }
+      },
+    };
+    yzb.native.setCallback(data);
+  }
+  getWorker(exeName: string) {
+    const worker = new IpcRendererWorker(exeName);
+    this.messageWorkerMap.set(exeName, worker);
+  }
+  deleteWorker(exeName: string) {
+    this.messageWorkerMap.delete(exeName);
+  }
+  setOtherMessageCallback(callback) {
+    this.otherMessageCallback = callback;
+  }
+}
+
+module.exports = { ipc: new IpcRenderer() };
