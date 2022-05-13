@@ -1,0 +1,27 @@
+{
+  "name": "@yuannzhibang/renderer",
+  "version": "0.0.1",
+  "description": "猿之棒渲染端帮助类",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --runInBand --env=node --colors --coverage test",
+    "prepublish-npm": "tsc && cp package.json dist/package.json",
+    "publish-npm": "cd dist && npm publish --access public --registry https://registry.npmjs.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.david-health.cn/yuanzhibang/ipc-communication.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "@types/node": "^13.13.52",
+    "@types/uuid": "^7.0.1",
+    "jest": "^25.2.7",
+    "ts-jest": "^25.3.1",
+    "typescript": "^3.8.3"
+  }
+}
