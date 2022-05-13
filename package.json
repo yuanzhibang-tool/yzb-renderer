@@ -1,5 +1,5 @@
 {
-  "name": "@yuannzhibang/renderer",
+  "name": "@yuanzhibang/renderer",
   "version": "0.0.1",
   "description": "猿之棒渲染端帮助类",
   "module": "index.js",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.david-health.cn/yuanzhibang/ipc-communication.git"
+    "url": "https://gitlab.david-health.cn/yuanzhibang/yzb-renderer.git"
   },
   "author": "",
   "license": "ISC",

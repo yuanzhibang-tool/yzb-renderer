@@ -68,7 +68,7 @@ class IpcRendererWorker {
   }
 
   promiseSend(topic: string, topicData: any) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject): any => {
       const data = {
         data: {
           process_name: this.exeName,
