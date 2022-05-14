@@ -104,7 +104,7 @@ class IpcRenderer {
           const type = messageObject.type;
           if (type === 'yzb_ipc_renderer_message') {
             // 此为ipc消息类型
-            const messageData = messageObject.data;
+            const messageData = messageObject.message;
             const messageTopic = messageData.topic;
             const messageTopicData = messageData.data;
             // 查找对应的回调,有则执行,无则不执行
