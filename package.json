@@ -1,14 +1,14 @@
 {
   "name": "@yuanzhibang/renderer",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "猿之棒渲染端帮助类",
-  "module": "./es2020/index.js",
-  "types": "./es2020/index.d.ts",
+  "module": "es2020/index.js",
+  "types": "es2020/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest --runInBand --env=node --colors --coverage test",
     "prod": "tsc -p tsconfig-amd.json ; tsc -p tsconfig-commonjs.json ; tsc -p tsconfig-es6.json ; tsc -p tsconfig-es2020.json ; tsc -p tsconfig-es2022.json ; tsc -p tsconfig-umd.json",
-    "prepublish-npm": "npm run prod ; cp package.json dist/package.json",
+    "prepublish-npm": "rm -rf dist ; npm run prod ; cp package.json dist/package.json",
     "publish-npm": "cd dist ; npm publish --access public --registry https://registry.npmjs.com"
   },
   "repository": {
