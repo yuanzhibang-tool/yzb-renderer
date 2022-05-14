@@ -145,4 +145,4 @@ class IpcRenderer {
   }
 }
 
-module.exports = { ipc: new IpcRenderer() };
+export const ipc = new IpcRenderer();
