@@ -9,7 +9,8 @@
     "test": "jest --runInBand --env=node --colors --coverage test",
     "prod": "tsc -p tsconfig-amd.json ; tsc -p tsconfig-commonjs.json ; tsc -p tsconfig-es6.json ; tsc -p tsconfig-es2020.json ; tsc -p tsconfig-es2022.json ; tsc -p tsconfig-umd.json",
     "prepublish-npm": "rm -rf dist ; npm run prod ; cp package.json dist/package.json",
-    "publish-npm": "cd dist ; npm publish --access public --registry https://registry.npmjs.com"
+    "publish-npm": "cd dist ; npm publish --access public --registry https://registry.npmjs.com",
+    "release": "npm version patch; npm run publish-npm"
   },
   "repository": {
     "type": "git",
