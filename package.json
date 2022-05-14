@@ -1,14 +1,15 @@
 {
   "name": "@yuanzhibang/renderer",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "猿之棒渲染端帮助类",
-  "module": "index.js",
-  "types": "index.d.ts",
+  "module": "./es2020/index.js",
+  "types": "./es2020/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest --runInBand --env=node --colors --coverage test",
-    "prepublish-npm": "tsc && cp package.json dist/package.json",
-    "publish-npm": "cd dist && npm publish --access public --registry https://registry.npmjs.com"
+    "prod": "tsc -p tsconfig-amd.json ; tsc -p tsconfig-commonjs.json ; tsc -p tsconfig-es6.json ; tsc -p tsconfig-es2020.json ; tsc -p tsconfig-es2022.json ; tsc -p tsconfig-umd.json",
+    "prepublish-npm": "npm run prod ; cp package.json dist/package.json",
+    "publish-npm": "cd dist ; npm publish --access public --registry https://registry.npmjs.com"
   },
   "repository": {
     "type": "git",
@@ -17,11 +18,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "@types/node": "^13.13.52",
-    "@types/uuid": "^7.0.1",
-    "jest": "^25.2.7",
-    "ts-jest": "^25.3.1",
-    "typescript": "^3.8.3"
+    "@types/jest": "^27.5.1",
+    "@types/node": "^17.0.33",
+    "ts-jest": "^28.0.2",
+    "typescript": "^4.6.4"
+  },
+  "exports": {
+    ".": {
+      "types": "./es2020/index.d.ts",
+      "amd": "./amd/index.js",
+      "umd": "./umd/index.js",
+      "commonjs": "./commonjs/index.js",
+      "es2020": "./es2020/index.js",
+      "es2022": "./es2022/index.js",
+      "default": "./es2020/index.js"
+    }
   }
 }
