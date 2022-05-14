@@ -135,6 +135,7 @@ class IpcRenderer {
   getWorker(exeName: string) {
     const worker = new IpcRendererWorker(exeName);
     this.messageWorkerMap.set(exeName, worker);
+    return worker;
   }
   deleteWorker(exeName: string) {
     this.messageWorkerMap.delete(exeName);
