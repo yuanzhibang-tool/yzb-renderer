@@ -2,6 +2,7 @@
   "name": "@yuanzhibang/renderer",
   "version": "0.0.8",
   "description": "猿之棒渲染端帮助类",
+  "type": "module",
   "module": "es2020/index.js",
   "types": "es2020/index.d.ts",
   "scripts": {
