@@ -46,13 +46,13 @@ export class IpcRendererWorker {
     this.onceMessageCallbackMap.clear();
   }
 
-  send(topic: string, topicData: any, nextCallback: any, errorCallbck: any, completeCallback: any) {
+  send(topic: string, topicMessage: any, nextCallback: any, errorCallbck: any, completeCallback: any) {
     const data = {
       data: {
         process_name: this.exeName,
         message: {
           topic,
-          data: topicData
+          message: topicMessage
         },
       },
       next: nextCallback,
@@ -102,12 +102,12 @@ export class IpcRenderer {
               // 此为ipc消息类型
               const messageData = messageObject.message;
               const messageTopic = messageData.topic;
-              const messageTopicData = messageData.data;
+              const messageTopicMessage = messageData.message;
               // 查找对应的回调,有则执行,无则不执行
               if (this.messageWorkerMap.has(exeName)) {
                 const worker = this.messageWorkerMap.get(exeName);
                 if (worker !== null && typeof worker === 'object') {
-                  worker.onMessage(messageTopic, messageTopicData);
+                  worker.onMessage(messageTopic, messageTopicMessage);
                 } else {
                   this.messageWorkerMap.delete(exeName);
                 }
