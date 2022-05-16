@@ -1,6 +1,6 @@
 declare const yzb: any;
 
-class IpcRendererWorker {
+export class IpcRendererWorker {
   exeName: string;
   messageCallbackMap = new Map();
   onceMessageCallbackMap = new Map();
@@ -89,12 +89,12 @@ class IpcRendererWorker {
   }
 }
 
-class IpcRenderer {
+export class IpcRenderer {
   messageWorkerMap = new Map();
   otherMessageCallback: ((message: any) => {}) | null = null;
   constructor() {
     if (typeof yzb === 'undefined') {
-      throw new Error("yzb is not found, please read the document.");
+      throw new Error('yzb is not found, please read the document.');
     }
     const data = {
       data: {},
