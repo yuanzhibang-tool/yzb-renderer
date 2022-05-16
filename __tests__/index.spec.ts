@@ -5,8 +5,10 @@ class MockYzbNative {
     nextCallbackMap = new Map();
     errorCallbackMap = new Map();
     completeCallbackMap = new Map();
-
-    setCallback() { }
+    messageCallback: any = null;
+    setCallback(messageCallback: () => void) {
+        this.messageCallback = messageCallback;
+    }
     sendProcessMessage(data: any) {
         const identity = '123456';
         this.nextCallbackMap.set(identity, data.next);
@@ -129,12 +131,32 @@ describe('IpcRendererWorker check', () => {
         instance.removeListener(testTopic);
         expect(instance.onceMessageCallbackMap.size).toEqual(0);
 
-        instance.on(testTopic, testOnCallback);
+        instance.on(testTopic, testOnCallback1);
         expect(instance.messageCallbackMap.size).toEqual(1);
-        expect(instance.messageCallbackMap.get(testTopic)).toEqual(testOnCallback);
+        expect(instance.messageCallbackMap.get(testTopic)).toEqual(testOnCallback1);
         instance.removeListener(testTopic);
         expect(instance.messageCallbackMap.size).toEqual(0);
     });
+
+    test('check removeAllListener', () => {
+        const exeName = 'test-exe-name';
+        const instance = new IpcRendererWorker(exeName);
+        const testOnCallback = (message): void => { console.log(message); };
+        const testOnCallback1 = (message): void => { console.log(message); };
+        const testTopic = 'test-topic';
+        const testTopic1 = 'test-topic1';
+
+        instance.once(testTopic, testOnCallback);
+        expect(instance.onceMessageCallbackMap.size).toEqual(1);
+        expect(instance.onceMessageCallbackMap.get(testTopic)).toEqual(testOnCallback);
+        instance.removeListener(testTopic);
+        instance.on(testTopic1, testOnCallback1);
+        instance.removeAllListener();
+        expect(instance.messageCallbackMap.size).toEqual(0);
+        expect(instance.onceMessageCallbackMap.size).toEqual(0);
+
+    });
+
     test('check send', () => {
         const nextCallback = (result: any) => { };
         const errorCallback = (error: any) => { };
@@ -200,7 +222,93 @@ describe('IpcRendererWorker check', () => {
 
 
 describe('IpcRenderer check', () => {
-    test('check constructor', () => {
+    test('check getWorker', () => {
+        const instance = new IpcRenderer();
+        const exeName = 'test-exe-name';
+        const worker = instance.getWorker(exeName);
+        expect(worker.exeName).toEqual(exeName);
+        expect(instance.messageWorkerMap.get(exeName)).toEqual(worker);
+        expect(instance.messageWorkerMap.size).toEqual(1);
+    });
 
+    test('check deleteWorker', () => {
+        const instance = new IpcRenderer();
+        const exeName = 'test-exe-name';
+        const worker = instance.getWorker(exeName);
+        instance.deleteWorker(exeName);
+        expect(instance.messageWorkerMap.size).toEqual(0);
+    });
+
+    test('check removeAllWorker', () => {
+        const instance = new IpcRenderer();
+        const exeName = 'test-exe-name';
+        const exeName1 = 'test-exe-name1';
+
+        const worker = instance.getWorker(exeName);
+        const worker1 = instance.getWorker(exeName1);
+        instance.removeAllWorker();
+        expect(instance.messageWorkerMap.size).toEqual(0);
+    });
+
+    test('check on topic message callback', () => {
+        const testTopic = 'test-topic';
+        const testTopicData = { k1: 'v1' };
+        const exeName = 'test-exe-name';
+        const topicMessage = {
+            type: 'yzb_ipc_renderer_message',
+            name: exeName,
+            message: {
+                topic: testTopic,
+                data: testTopicData,
+            }
+        };
+        const instance = new IpcRenderer();
+        const worker = instance.getWorker(exeName);
+        expect.assertions(1);
+
+        worker.on(testTopic, (message: any) => {
+            expect(message).toEqual(testTopicData);
+        });
+        yzb.native.messageCallback.next(topicMessage);
+    });
+
+    test('check on not topic message callback', () => {
+        const testTopic = 'test-topic';
+        const testTopicData = { k1: 'v1' };
+        const exeName = 'test-exe-name';
+        const testMessage = {
+            type: 'xxx',
+            name: exeName,
+            message: {
+                topic: testTopic,
+                data: testTopicData,
+            }
+        };
+        expect.assertions(3);
+
+        const instance = new IpcRenderer();
+        instance.setOtherMessageCallback((message) => {
+            expect(message).toEqual(testMessage);
+        });
+        yzb.native.messageCallback.next(testMessage);
+
+        const testMessage1 = {
+            type: 'xxx',
+            message: testTopicData,
+            name: exeName
+        };
+        instance.setOtherMessageCallback((message) => {
+            expect(message).toEqual(testMessage1);
+        });
+        yzb.native.messageCallback.next(testMessage1);
+
+        const testMessage2 = {
+            message: 'xxx',
+            name: exeName
+        };
+        instance.setOtherMessageCallback((message) => {
+            expect(message).toEqual(testMessage2);
+        });
+        yzb.native.messageCallback.next(testMessage2);
     });
 });
