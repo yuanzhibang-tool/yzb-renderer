@@ -40,6 +40,12 @@ export class IpcRendererWorker {
     this.messageCallbackMap.delete(topic);
     this.onceMessageCallbackMap.delete(topic);
   }
+
+  removeAllListener() {
+    this.messageCallbackMap.clear();
+    this.onceMessageCallbackMap.clear();
+  }
+
   send(topic: string, topicData: any, nextCallback: any, errorCallbck: any, completeCallback: any) {
     const data = {
       data: {
@@ -129,6 +135,11 @@ export class IpcRenderer {
   deleteWorker(exeName: string) {
     this.messageWorkerMap.delete(exeName);
   }
+
+  removeAllWorker() {
+    this.messageWorkerMap.clear();
+  }
+
   setOtherMessageCallback(callback) {
     this.otherMessageCallback = callback;
   }
