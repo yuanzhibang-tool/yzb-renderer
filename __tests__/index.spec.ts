@@ -163,7 +163,7 @@ describe('IpcRendererWorker check', () => {
 
     });
 
-    test('check promiseSend', () => {
+    test('check sendPromise', () => {
 
         expect.assertions(4);
         const testTopic = 'test-topic';
@@ -190,9 +190,9 @@ describe('IpcRendererWorker check', () => {
             }
         };
         const instance = new IpcRendererWorker(exeName);
-        instance.promiseSend(testTopic, testTopicData).then(nextCallback).catch(errorCallback).finally(completeCallback);
+        instance.sendPromise(testTopic, testTopicData).then(nextCallback).catch(errorCallback).finally(completeCallback);
         yzb.native.nextCallbackMap.get('123456')(testResultData);
-        instance.promiseSend(testTopic, testTopicData).then(nextCallback).catch(errorCallback).finally(completeCallback);
+        instance.sendPromise(testTopic, testTopicData).then(nextCallback).catch(errorCallback).finally(completeCallback);
         yzb.native.errorCallbackMap.get('123456')(testResultData);
     });
 

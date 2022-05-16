@@ -56,7 +56,7 @@ export class IpcRendererWorker {
     yzb.native.sendProcessMessage(data);
   }
 
-  promiseSend(topic: string, topicData: any) {
+  sendPromise(topic: string, topicData: any) {
     return new Promise((resolve, reject): void => {
       const data = {
         data: {
