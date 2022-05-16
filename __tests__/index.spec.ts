@@ -147,9 +147,6 @@ describe('IpcRendererWorker check', () => {
         const testTopic1 = 'test-topic1';
 
         instance.once(testTopic, testOnCallback);
-        expect(instance.onceMessageCallbackMap.size).toEqual(1);
-        expect(instance.onceMessageCallbackMap.get(testTopic)).toEqual(testOnCallback);
-        instance.removeListener(testTopic);
         instance.on(testTopic1, testOnCallback1);
         instance.removeAllListener();
         expect(instance.messageCallbackMap.size).toEqual(0);
