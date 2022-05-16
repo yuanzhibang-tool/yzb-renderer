@@ -15,9 +15,10 @@ export class IpcRendererWorker {
     } else if (this.onceMessageCallbackMap.has(topic)) {
       const callback = this.onceMessageCallbackMap.get(topic);
       callback(message);
+      this.onceMessageCallbackMap.delete(topic);
     } else { }
   }
-  on(topic: string, callback: () => {}) {
+  on(topic: string, callback: (message: any) => void) {
     if (
       this.messageCallbackMap.has(topic) ||
       this.onceMessageCallbackMap.has(topic)
@@ -26,7 +27,7 @@ export class IpcRendererWorker {
     }
     this.messageCallbackMap.set(topic, callback);
   }
-  once(topic: string, callback: () => {}) {
+  once(topic: string, callback: (message: any) => void) {
     if (
       this.messageCallbackMap.has(topic) ||
       this.onceMessageCallbackMap.has(topic)
@@ -48,27 +49,15 @@ export class IpcRendererWorker {
           data: topicData
         },
       },
-      next: (result: any) => {
-        if (nextCallback) {
-          nextCallback(result);
-        }
-      },
-      error: (error: any) => {
-        if (errorCallbck) {
-          errorCallbck(error);
-        }
-      },
-      complete: () => {
-        if (completeCallback) {
-          completeCallback();
-        }
-      }
+      next: nextCallback,
+      error: errorCallbck,
+      complete: completeCallback
     };
     yzb.native.sendProcessMessage(data);
   }
 
   promiseSend(topic: string, topicData: any) {
-    return new Promise((resolve, reject): any => {
+    return new Promise((resolve, reject): void => {
       const data = {
         data: {
           process_name: this.exeName,
