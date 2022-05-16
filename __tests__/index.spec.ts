@@ -34,18 +34,18 @@ describe('IpcRendererWorker check', () => {
         const exeName = 'test-exe-name';
         const instance = new IpcRendererWorker(exeName);
         const testTopic = 'test-topic';
-        const testTopicData = { k1: 'v1' };
+        const testTopicMessage = { k1: 'v1' };
         expect.assertions(2);
         // 先测试once在测试on
         instance.once(testTopic, (message: any) => {
-            expect(message).toEqual(testTopicData);
+            expect(message).toEqual(testTopicMessage);
         });
-        instance.onMessage(testTopic, testTopicData);
+        instance.onMessage(testTopic, testTopicMessage);
 
         instance.on(testTopic, (message: any) => {
-            expect(message).toEqual(testTopicData);
+            expect(message).toEqual(testTopicMessage);
         });
-        instance.onMessage(testTopic, testTopicData);
+        instance.onMessage(testTopic, testTopicMessage);
     });
 
     test('check on', () => {
@@ -163,14 +163,14 @@ describe('IpcRendererWorker check', () => {
         const completeCallback = () => { };
         const testTopic = 'test-topic';
         const exeName = 'test-exe-name';
-        const testTopicData = { k1: 'v1' };
+        const testTopicMessage = { k1: 'v1' };
 
         const data = {
             data: {
                 process_name: exeName,
                 message: {
                     topic: testTopic,
-                    data: testTopicData
+                    data: testTopicMessage
                 },
             },
             next: nextCallback,
@@ -178,7 +178,7 @@ describe('IpcRendererWorker check', () => {
             complete: completeCallback
         };
         const instance = new IpcRendererWorker(exeName);
-        instance.send(testTopic, testTopicData, nextCallback, errorCallback, completeCallback);
+        instance.send(testTopic, testTopicMessage, nextCallback, errorCallback, completeCallback);
         expect(yzb.native.nextCallbackMap.get('123456')).toEqual(nextCallback);
         expect(yzb.native.errorCallbackMap.get('123456')).toEqual(errorCallback);
         expect(yzb.native.completeCallbackMap.get('123456')).toEqual(completeCallback);
@@ -190,7 +190,7 @@ describe('IpcRendererWorker check', () => {
         expect.assertions(4);
         const testTopic = 'test-topic';
         const exeName = 'test-exe-name';
-        const testTopicData = { k1: 'v1' };
+        const testTopicMessage = { k1: 'v1' };
         const testResultData = { r1: 'v1' };
         const testErrorData = { e1: 'v1' };
         const nextCallback = (result: any) => {
@@ -207,14 +207,14 @@ describe('IpcRendererWorker check', () => {
                 process_name: exeName,
                 message: {
                     topic: testTopic,
-                    data: testTopicData
+                    data: testTopicMessage
                 },
             }
         };
         const instance = new IpcRendererWorker(exeName);
-        instance.sendPromise(testTopic, testTopicData).then(nextCallback).catch(errorCallback).finally(completeCallback);
+        instance.sendPromise(testTopic, testTopicMessage).then(nextCallback).catch(errorCallback).finally(completeCallback);
         yzb.native.nextCallbackMap.get('123456')(testResultData);
-        instance.sendPromise(testTopic, testTopicData).then(nextCallback).catch(errorCallback).finally(completeCallback);
+        instance.sendPromise(testTopic, testTopicMessage).then(nextCallback).catch(errorCallback).finally(completeCallback);
         yzb.native.errorCallbackMap.get('123456')(testResultData);
     });
 
@@ -252,14 +252,14 @@ describe('IpcRenderer check', () => {
 
     test('check on topic message callback', () => {
         const testTopic = 'test-topic';
-        const testTopicData = { k1: 'v1' };
+        const testTopicMessage = { k1: 'v1' };
         const exeName = 'test-exe-name';
         const topicMessage = {
             type: 'yzb_ipc_renderer_message',
             name: exeName,
             message: {
                 topic: testTopic,
-                data: testTopicData,
+                message: testTopicMessage,
             }
         };
         const instance = new IpcRenderer();
@@ -267,21 +267,21 @@ describe('IpcRenderer check', () => {
         expect.assertions(1);
 
         worker.on(testTopic, (message: any) => {
-            expect(message).toEqual(testTopicData);
+            expect(message).toEqual(testTopicMessage);
         });
         yzb.native.messageCallback.next(topicMessage);
     });
 
     test('check on not topic message callback', () => {
         const testTopic = 'test-topic';
-        const testTopicData = { k1: 'v1' };
+        const testTopicMessage = { k1: 'v1' };
         const exeName = 'test-exe-name';
         const testMessage = {
             type: 'xxx',
             name: exeName,
             message: {
                 topic: testTopic,
-                data: testTopicData,
+                data: testTopicMessage,
             }
         };
         expect.assertions(3);
@@ -294,7 +294,7 @@ describe('IpcRenderer check', () => {
 
         const testMessage1 = {
             type: 'xxx',
-            message: testTopicData,
+            message: testTopicMessage,
             name: exeName
         };
         instance.setOtherMessageCallback((message) => {
