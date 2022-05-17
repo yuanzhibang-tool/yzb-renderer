@@ -46,7 +46,8 @@ export class IpcRendererWorker {
     this.onceMessageCallbackMap.clear();
   }
 
-  send(topic: string, topicMessage: any, nextCallback: any, errorCallbck: any, completeCallback: any) {
+  // tslint:disable-next-line: max-line-length
+  send(topic: string, topicMessage: any, nextCallback: (result: any) => void, errorCallbck: (error: any) => void, completeCallback: () => void) {
     const data = {
       data: {
         process_name: this.exeName,
