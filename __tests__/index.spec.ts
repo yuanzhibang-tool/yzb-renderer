@@ -1,4 +1,3 @@
-import { } from 'jest';
 declare const yzb: any;
 
 class MockYzbNative {
