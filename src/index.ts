@@ -63,14 +63,14 @@ export class IpcRendererWorker {
     yzb.native.sendProcessMessage(data);
   }
 
-  sendPromise(topic: string, topicData: any) {
-    return new Promise((resolve, reject): void => {
+  sendPromise(topic: string, topicMessage: any) {
+    return new Promise((resolve, reject): any => {
       const data = {
         data: {
           process_name: this.exeName,
           message: {
             topic,
-            data: topicData
+            message: topicMessage
           },
         },
         next: (result: any) => {
