@@ -46,7 +46,8 @@ export class IpcRendererWorker {
     this.onceMessageCallbackMap.clear();
   }
 
-  send(topic: string, topicMessage: any, nextCallback: any, errorCallbck: any, completeCallback: any) {
+  // tslint:disable-next-line: max-line-length
+  send(topic: string, topicMessage: any, nextCallback: (result: any) => void, errorCallbck: (error: any) => void, completeCallback: () => void) {
     const data = {
       data: {
         process_name: this.exeName,
@@ -62,14 +63,14 @@ export class IpcRendererWorker {
     yzb.native.sendProcessMessage(data);
   }
 
-  sendPromise(topic: string, topicData: any) {
-    return new Promise((resolve, reject): void => {
+  sendPromise(topic: string, topicMessage: any) {
+    return new Promise((resolve, reject): any => {
       const data = {
         data: {
           process_name: this.exeName,
           message: {
             topic,
-            data: topicData
+            message: topicMessage
           },
         },
         next: (result: any) => {

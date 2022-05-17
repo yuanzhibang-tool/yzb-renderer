@@ -203,7 +203,7 @@ describe('IpcRendererWorker check', () => {
                 process_name: exeName,
                 message: {
                     topic: testTopic,
-                    data: testTopicMessage
+                    message: testTopicMessage
                 },
             }
         };
