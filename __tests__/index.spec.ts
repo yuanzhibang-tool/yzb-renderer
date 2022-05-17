@@ -211,7 +211,7 @@ describe('IpcRendererWorker check', () => {
         instance.sendPromise(testTopic, testTopicMessage).then(nextCallback).catch(errorCallback).finally(completeCallback);
         yzb.native.nextCallbackMap.get('123456')(testResultData);
         instance.sendPromise(testTopic, testTopicMessage).then(nextCallback).catch(errorCallback).finally(completeCallback);
-        yzb.native.errorCallbackMap.get('123456')(testResultData);
+        yzb.native.errorCallbackMap.get('123456')(testErrorData);
     });
 
 });
