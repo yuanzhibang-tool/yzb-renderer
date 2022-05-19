@@ -8,7 +8,7 @@ export class IpcRendererWorker {
   constructor(exeName: string) {
     this.exeName = exeName;
   }
-  onMessage(topic: string, message: any) {
+  onMessage(topic: string, message: any): void {
     if (this.messageCallbackMap.has(topic)) {
       const callback = this.messageCallbackMap.get(topic);
       callback(message);
@@ -18,7 +18,7 @@ export class IpcRendererWorker {
       this.onceMessageCallbackMap.delete(topic);
     } else { }
   }
-  on(topic: string, callback: (message: any) => void) {
+  on(topic: string, callback: (message: any) => void): void {
     if (
       this.messageCallbackMap.has(topic) ||
       this.onceMessageCallbackMap.has(topic)
@@ -27,7 +27,7 @@ export class IpcRendererWorker {
     }
     this.messageCallbackMap.set(topic, callback);
   }
-  once(topic: string, callback: (message: any) => void) {
+  once(topic: string, callback: (message: any) => void): void {
     if (
       this.messageCallbackMap.has(topic) ||
       this.onceMessageCallbackMap.has(topic)
@@ -36,18 +36,18 @@ export class IpcRendererWorker {
     }
     this.onceMessageCallbackMap.set(topic, callback);
   }
-  removeListener(topic: string) {
+  removeListener(topic: string): void {
     this.messageCallbackMap.delete(topic);
     this.onceMessageCallbackMap.delete(topic);
   }
 
-  removeAllListener() {
+  removeAllListener(): void {
     this.messageCallbackMap.clear();
     this.onceMessageCallbackMap.clear();
   }
 
   // tslint:disable-next-line: max-line-length
-  send(topic: string, topicMessage: any, nextCallback: (result: any) => void, errorCallbck: (error: any) => void, completeCallback: () => void) {
+  send(topic: string, topicMessage: any, nextCallback: (result: any) => void, errorCallbck: (error: any) => void, completeCallback: () => void): void {
     const data = {
       data: {
         process_name: this.exeName,
@@ -63,7 +63,7 @@ export class IpcRendererWorker {
     yzb.native.sendProcessMessage(data);
   }
 
-  sendPromise(topic: string, topicMessage: any) {
+  sendPromise(topic: string, topicMessage: any): Promise<any> {
     return new Promise((resolve, reject): any => {
       const data = {
         data: {
@@ -85,9 +85,24 @@ export class IpcRendererWorker {
   }
 }
 
+
+/**
+ * 渲染进程的主体类
+ */
 export class IpcRenderer {
-  messageWorkerMap = new Map();
-  otherMessageCallback: ((message: any) => {}) | null = null;
+
+  /**
+   * 内部变量无需关注,存储worker的map
+   */
+  messageWorkerMap = new Map<string, IpcRendererWorker>();
+  /**
+   * 内部变量无需关注,除了topic消息以外,其他拓展进程发送来的消息监听回调
+   */
+  otherMessageCallback: ((message: any) => void) | null = null;
+
+  /**
+   * 创建类实例
+   */
   constructor() {
     if (typeof yzb === 'undefined') {
       throw new Error('yzb is not found, please read the document.');
@@ -134,20 +149,34 @@ export class IpcRenderer {
     };
     yzb.native.setCallback(data);
   }
-  getWorker(exeName: string) {
+  /**
+   * 根据拓展进程名字获取单个进程通信worker
+   * @param exeName 进程名字
+   * @returns worker 对应进程通信worker
+   */
+  getWorker(exeName: string): IpcRendererWorker {
     const worker = new IpcRendererWorker(exeName);
     this.messageWorkerMap.set(exeName, worker);
     return worker;
   }
-  deleteWorker(exeName: string) {
+  /**
+   * 根据拓展进程名字删除单个进程通信worker
+   * @param exeName 进程名字
+   */
+  deleteWorker(exeName: string): void {
     this.messageWorkerMap.delete(exeName);
   }
-
-  removeAllWorker() {
+  /**
+   * 删除所有进程通信worker
+   */
+  removeAllWorker(): void {
     this.messageWorkerMap.clear();
   }
-
-  setOtherMessageCallback(callback) {
+  /**
+   * 设置除了topic消息以外,其他拓展进程发送来的消息监听回调
+   * @param callback 消息回调
+   */
+  setOtherMessageCallback(callback: (message: any) => void): void {
     this.otherMessageCallback = callback;
   }
 }
