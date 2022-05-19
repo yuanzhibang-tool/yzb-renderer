@@ -1,23 +1,52 @@
 declare const yzb: any;
 
 export class IpcRendererWorker {
+  /**
+   * 进程名
+   */
   exeName: string;
-  messageCallbackMap = new Map();
-  onceMessageCallbackMap = new Map();
 
+  /**
+   * 内部变量无需关注,on保存的回调保存map
+   */
+  messageCallbackMap = new Map<string, (message: any) => void>();
+  /**
+   * 内部变量无需关注,once保存的回调保存map
+   */
+  onceMessageCallbackMap = new Map<string, (message: any) => void>();
+
+  /**
+   * 创建类实例
+   * @param exeName 进程名
+   */
   constructor(exeName: string) {
     this.exeName = exeName;
   }
+
+  /**
+   * 内部方法无需关注,用来响应由IpcRenderer转发process.on('message')消息的方法
+   * @param topic 消息的topic
+   * @param message topic消息的消息体
+   */
   onMessage(topic: string, message: any): void {
     if (this.messageCallbackMap.has(topic)) {
       const callback = this.messageCallbackMap.get(topic);
-      callback(message);
+      if (callback) {
+        callback(message);
+      }
     } else if (this.onceMessageCallbackMap.has(topic)) {
       const callback = this.onceMessageCallbackMap.get(topic);
-      callback(message);
+      if (callback) {
+        callback(message);
+      }
       this.onceMessageCallbackMap.delete(topic);
     } else { }
   }
+  /**
+   * 监听拓展进程发送来的topic消息,除非取消监听或者拓展进程生命周期结束,否则该监听一直有效
+   * @param topic 监听的topic
+   * @param callback 收到topic消息的回调,message为topic消息的消息体
+   */
   on(topic: string, callback: (message: any) => void): void {
     if (
       this.messageCallbackMap.has(topic) ||
@@ -27,6 +56,11 @@ export class IpcRendererWorker {
     }
     this.messageCallbackMap.set(topic, callback);
   }
+  /**
+   * 和on方法的作用一致,只不过回调一次后自动移除该回调
+   * @param topic 监听的topic
+   * @param callback 收到topic消息的回调,message为topic消息的消息体
+   */
   once(topic: string, callback: (message: any) => void): void {
     if (
       this.messageCallbackMap.has(topic) ||
@@ -36,16 +70,30 @@ export class IpcRendererWorker {
     }
     this.onceMessageCallbackMap.set(topic, callback);
   }
+  /**
+   * 移除单个topic消息回调,不区分是通过on或者once添加的回调
+   * @param topic 移除监听的topic
+   */
   removeListener(topic: string): void {
     this.messageCallbackMap.delete(topic);
     this.onceMessageCallbackMap.delete(topic);
   }
-
+  /**
+   * 移除所有监听的topic,不区分是通过on或者once添加的回调
+   */
   removeAllListener(): void {
     this.messageCallbackMap.clear();
     this.onceMessageCallbackMap.clear();
   }
 
+  /**
+   * 向拓展进程发送消息
+   * @param topic 消息的topic
+   * @param topicMessage topic消息的消息体
+   * @param nextCallback next/then结果回调
+   * @param errorCallbck error错误回调
+   * @param completeCallback 结束回调
+   */
   // tslint:disable-next-line: max-line-length
   send(topic: string, topicMessage: any, nextCallback: (result: any) => void, errorCallbck: (error: any) => void, completeCallback: () => void): void {
     const data = {
@@ -63,6 +111,12 @@ export class IpcRendererWorker {
     yzb.native.sendProcessMessage(data);
   }
 
+  /**
+   * 以promise的形式向拓展进程发送消息
+   * @param topic 消息的topic
+   * @param topicMessage topic消息的消息体
+   * @returns promise 发送消息的回调promise
+   */
   sendPromise(topic: string, topicMessage: any): Promise<any> {
     return new Promise((resolve, reject): any => {
       const data = {
