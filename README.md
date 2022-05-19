@@ -21,3 +21,15 @@ https://www.npmjs.com/package/@yuanzhibang/renderer
 或者
 
 `yarn add @yuanzhibang/renderer`
+
+## 使用
+
+> `@yuanzhibang/renderer`该模块仅适用在网页 `renderer` 进程里,该拓展在初始化后,将自动接收`yzb.native.setCallback`的消息回调,请勿在拓展进程的其他部位使用`yzb.native.setCallback`来配置消息回调,否则可能会造成模块工作异常.
+
+_请参考_
+
+`typescript`使用演示
+https://github.com/yuanzhibang-tool/yzb-extension-demo-ts/blob/main/src/index.ts
+
+`javascript`使用演示
+https://github.com/yuanzhibang-tool/yzb-extension-demo-js/blob/main/src/index.js
