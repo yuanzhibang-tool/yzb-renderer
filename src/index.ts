@@ -95,19 +95,25 @@ export class IpcRendererWorker {
    * @param completeCallback 结束回调
    */
   // tslint:disable-next-line: max-line-length
-  send(topic: string, topicMessage: any, nextCallback: (result: any) => void, errorCallbck: (error: any) => void, completeCallback: () => void): void {
-    const data = {
+  send(topic: string, topicMessage: any = null, nextCallback: ((result: any) => void) | null = null, errorCallbck: ((error: any) => void) | null = null, completeCallback: (() => void) | null = null): void {
+    const data: any = {
       data: {
         process_name: this.exeName,
         message: {
           topic,
           message: topicMessage
         },
-      },
-      next: nextCallback,
-      error: errorCallbck,
-      complete: completeCallback
+      }
     };
+    if (nextCallback) {
+      data.next = nextCallback;
+    }
+    if (errorCallbck) {
+      data.error = errorCallbck;
+    }
+    if (completeCallback) {
+      data.complete = completeCallback;
+    }
     yzb.native.sendProcessMessage(data);
   }
 
@@ -117,7 +123,7 @@ export class IpcRendererWorker {
    * @param topicMessage topic消息的消息体
    * @returns promise 发送消息的回调promise
    */
-  sendPromise(topic: string, topicMessage: any): Promise<any> {
+  sendPromise(topic: string, topicMessage: any = null): Promise<any> {
     return new Promise((resolve, reject): any => {
       const data = {
         data: {
