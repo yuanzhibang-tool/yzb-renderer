@@ -15,11 +15,11 @@ class MockYzbNative {
         this.completeCallbackMap.set(identity, data.complete);
     }
 }
-(global as any).yzb = {
+(window as any).yzb = {
     native: new MockYzbNative()
 };
 
-import { IpcRendererWorker, IpcRenderer } from '../src/index';
+import { IpcRendererWorker, IpcRenderer, IpcDataHelper } from '../src/index';
 
 
 describe('IpcRendererWorker check', () => {
@@ -306,5 +306,14 @@ describe('IpcRenderer check', () => {
             expect(message).toEqual(testMessage2);
         });
         yzb.native.messageCallback.next(testMessage2);
+    });
+});
+
+describe('IpcDataHelper check', () => {
+    test('check toBase64', () => {
+        const inputValue = [0x01, 0x02, 0x03, 0x04];
+        const result = IpcDataHelper.toBase64(inputValue as any);
+        const expectResult = 'AQIDBA==';
+        expect(result).toEqual(expectResult);
     });
 });

@@ -1,5 +1,70 @@
 declare const yzb: any;
 
+export interface IpcData {
+
+  /**
+   * 数据类型
+   */
+  type: 'base64' | 'hex' | 'string';
+
+  /**
+   * 数据的具体值,本质为字符串,hex为16进制字符串'0e3a'
+   */
+  data: string;
+}
+/**
+ * ipc通信的数据类型,用来对数据进行解码编码
+ */
+export class IpcDataHelper {
+  static toBase64(u8: Uint8Array) {
+    return btoa(String.fromCharCode.apply(null, u8 as any));
+  }
+  static fromBase64(str: string) {
+    return atob(str).split('').map((c) => { c.charCodeAt(0); });
+  }
+  static hexToBytes(hex: string) {
+    const bytes: Array<number> = [];
+    for (let c = 0; c < hex.length; c += 2) {
+      bytes.push(parseInt(hex.substring(c, 2), 16));
+    }
+    return bytes;
+  }
+
+  static bytesToHex(bytes: Uint8Array) {
+    const hex: Array<string> = [];
+    // tslint:disable-next-line: prefer-for-of
+    for (let i = 0; i < bytes.length; i++) {
+      const current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+      // tslint:disable-next-line: no-bitwise
+      hex.push((current >>> 4).toString(16));
+      // tslint:disable-next-line: no-bitwise
+      hex.push((current & 0xF).toString(16));
+    }
+    return hex.join('');
+  }
+
+  static encode(type: 'base64' | 'hex' | 'string', data: Uint8Array) {
+    let stringValue: string | null = null;
+    switch (type) {
+      case 'base64':
+        stringValue = IpcDataHelper.toBase64(data);
+        break;
+      case 'hex':
+        stringValue = IpcDataHelper.bytesToHex(data);
+        break;
+      case 'string':
+        stringValue = IpcDataHelper.toBase64(data);
+        break;
+      default:
+        break;
+    }
+    return {
+      type,
+
+    };
+  }
+  static decode(type: 'base64' | 'hex' | 'string', data: string) { }
+}
 export class IpcRendererWorker {
   /**
    * 进程名
