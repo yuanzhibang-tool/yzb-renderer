@@ -5,7 +5,7 @@ export interface IpcData {
   /**
    * 数据类型
    */
-  type: 'base64' | 'hex' | 'string';
+  type: 'base64' | 'hex';
 
   /**
    * 数据的具体值,本质为字符串,hex为16进制字符串'0e3a'
@@ -16,31 +16,27 @@ export interface IpcData {
  * ipc通信的数据类型,用来对数据进行解码编码
  */
 export class IpcDataHelper {
-  static toBase64(u8: Uint8Array) {
-    return window.btoa(String.fromCharCode.apply(null, u8 as any));
+
+  static uint8ArrayToString(uint8Array: Uint8Array, encoding: string) {
+    const decoder = new TextDecoder(encoding);
+    const result = decoder.decode(uint8Array);
+    return result;
   }
-  static fromBase64(base64: string) {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const u8Array = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      const indexValue = binaryString.charCodeAt(i);
-      u8Array[i] = indexValue;
-    }
-    return u8Array;
-  }
-  static hexToBytes(hex: string) {
-    const u8Array = new Uint8Array(hex.length / 2);
-    for (let c = 0; c < hex.length; c += 2) {
-      const subString = hex.substring(c, c + 2);
-      const value = parseInt(subString, 16);
-      const index = c / 2;
-      u8Array[index] = value;
-    }
-    return u8Array;
+  /**
+   * uint8Array转换为base64
+   * @param uint8Array 输入的uint8Array
+   * @returns 转换后的base64
+   */
+  static uint8ArraytoBase64(uint8Array: Uint8Array) {
+    return window.btoa(String.fromCharCode.apply(null, uint8Array as any));
   }
 
-  static bytesToHex(bytes: Uint8Array) {
+  /**
+   * uint8Array转换为hex
+   * @param uint8Array 输入的uint8Array
+   * @returns 转换后的hex
+   */
+  static uint8ArrayToHex(bytes: Uint8Array) {
     const hex: Array<string> = [];
     // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < bytes.length; i++) {
@@ -53,27 +49,48 @@ export class IpcDataHelper {
     return hex.join('');
   }
 
-  static encode(type: 'base64' | 'hex' | 'string', data: Uint8Array) {
-    let stringValue: string | null = null;
-    switch (type) {
-      case 'base64':
-        stringValue = IpcDataHelper.toBase64(data);
-        break;
-      case 'hex':
-        stringValue = IpcDataHelper.bytesToHex(data);
-        break;
-      case 'string':
-        stringValue = IpcDataHelper.toBase64(data);
-        break;
-      default:
-        break;
+  /**
+   * base64转换为uint8Array
+   * @param base64 输入的base64
+   * @returns  转换后的uint8Array
+   */
+  static base64ToUint8Array(base64: string) {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const u8Array = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      const indexValue = binaryString.charCodeAt(i);
+      u8Array[i] = indexValue;
     }
+    return u8Array;
+  }
+  /**
+   * hex转换为uint8Array
+   * @param hex 输入的hex
+   * @returns  转换后的uint8Array
+   */
+  static hexToUint8Array(hex: string) {
+    const u8Array = new Uint8Array(hex.length / 2);
+    for (let c = 0; c < hex.length; c += 2) {
+      const subString = hex.substring(c, c + 2);
+      const value = parseInt(subString, 16);
+      const index = c / 2;
+      u8Array[index] = value;
+    }
+    return u8Array;
+  }
+  /**
+   * 生成IpcData
+   * @param type 编码格式
+   * @param data 编码后的字符串
+   * @returns 生成的IpcData对象
+   */
+  static encode(type: 'base64' | 'hex', data: string): IpcData {
     return {
       type,
-
+      data
     };
   }
-  static decode(type: 'base64' | 'hex' | 'string', data: string) { }
 }
 export class IpcRendererWorker {
   /**
