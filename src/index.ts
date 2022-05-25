@@ -17,7 +17,13 @@ export interface IpcData {
  */
 export class IpcDataHelper {
 
-  static uint8ArrayToString(uint8Array: Uint8Array, encoding: string) {
+  /**
+   * uint8Array转换为字符串
+   * @param uint8Array 输入的uint8Array
+   * @param encoding 可选值参考:https://encoding.spec.whatwg.org/#names-and-labels
+   * @returns 转换成功的字符串
+   */
+  static uint8ArrayToString(uint8Array: Uint8Array, encoding: string): string {
     const decoder = new TextDecoder(encoding);
     const result = decoder.decode(uint8Array);
     return result;
@@ -27,7 +33,7 @@ export class IpcDataHelper {
    * @param uint8Array 输入的uint8Array
    * @returns 转换后的base64
    */
-  static uint8ArraytoBase64(uint8Array: Uint8Array) {
+  static uint8ArraytoBase64(uint8Array: Uint8Array): string {
     return window.btoa(String.fromCharCode.apply(null, uint8Array as any));
   }
 
@@ -36,7 +42,7 @@ export class IpcDataHelper {
    * @param uint8Array 输入的uint8Array
    * @returns 转换后的hex
    */
-  static uint8ArrayToHex(bytes: Uint8Array) {
+  static uint8ArrayToHex(bytes: Uint8Array): string {
     const hex: Array<string> = [];
     // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < bytes.length; i++) {
@@ -54,7 +60,7 @@ export class IpcDataHelper {
    * @param base64 输入的base64
    * @returns  转换后的uint8Array
    */
-  static base64ToUint8Array(base64: string) {
+  static base64ToUint8Array(base64: string): Uint8Array {
     const binaryString = window.atob(base64);
     const len = binaryString.length;
     const u8Array = new Uint8Array(len);
@@ -69,7 +75,7 @@ export class IpcDataHelper {
    * @param hex 输入的hex
    * @returns  转换后的uint8Array
    */
-  static hexToUint8Array(hex: string) {
+  static hexToUint8Array(hex: string): Uint8Array {
     const u8Array = new Uint8Array(hex.length / 2);
     for (let c = 0; c < hex.length; c += 2) {
       const subString = hex.substring(c, c + 2);

@@ -1,4 +1,5 @@
 declare const yzb: any;
+import { TextEncoder, TextDecoder } from '@sinonjs/text-encoding';
 
 class MockYzbNative {
     nextCallbackMap = new Map();
@@ -15,6 +16,7 @@ class MockYzbNative {
         this.completeCallbackMap.set(identity, data.complete);
     }
 }
+(window as any).TextDecoder = TextDecoder;
 (window as any).yzb = {
     native: new MockYzbNative()
 };
@@ -22,15 +24,27 @@ class MockYzbNative {
 import { IpcRendererWorker, IpcRenderer, IpcDataHelper } from '../src/index';
 
 describe('IpcDataHelper check', () => {
-    test('check toBase64', () => {
+
+    test('check uint8ArrayToString', () => {
+        const inputValue = new Uint8Array(4);
+        inputValue[0] = 0x31;
+        inputValue[1] = 0x32;
+        inputValue[2] = 0x33;
+        inputValue[3] = 0x34;
+        const result = IpcDataHelper.uint8ArrayToString(inputValue as any, 'ascii');
+        const expectResult = '1234';
+        expect(result).toEqual(expectResult);
+    });
+
+    test('check uint8ArraytoBase64', () => {
         const inputValue = [0x01, 0x02, 0x03, 0x04];
-        const result = IpcDataHelper.toBase64(inputValue as any);
+        const result = IpcDataHelper.uint8ArraytoBase64(inputValue as any);
         const expectResult = 'AQIDBA==';
         expect(result).toEqual(expectResult);
     });
-    test('check fromBase64', () => {
+    test('check base64ToUint8Array', () => {
         const inputValue = 'AQIDBA==';
-        const result = IpcDataHelper.fromBase64(inputValue);
+        const result = IpcDataHelper.base64ToUint8Array(inputValue);
         const expectResult = new Uint8Array(4);
         expectResult[0] = 0x01;
         expectResult[1] = 0x02;
@@ -38,9 +52,9 @@ describe('IpcDataHelper check', () => {
         expectResult[3] = 0x04;
         expect(result).toEqual(expectResult);
     });
-    test('check hexToBytes', () => {
+    test('check hexToUint8Array', () => {
         const inputValue = '01020304';
-        const result = IpcDataHelper.hexToBytes(inputValue);
+        const result = IpcDataHelper.hexToUint8Array(inputValue);
         const expectResult = new Uint8Array(4);
         expectResult[0] = 0x01;
         expectResult[1] = 0x02;
@@ -49,14 +63,25 @@ describe('IpcDataHelper check', () => {
         expect(result).toEqual(expectResult);
     });
 
-    test('check bytesToHex', () => {
+    test('check uint8ArrayToHex', () => {
         const inputValue = new Uint8Array(4);
         inputValue[0] = 0x01;
         inputValue[1] = 0x02;
         inputValue[2] = 0x03;
         inputValue[3] = 0x04;
-        const result = IpcDataHelper.bytesToHex(inputValue);
+        const result = IpcDataHelper.uint8ArrayToHex(inputValue);
         const expectResult = '01020304';
+        expect(result).toEqual(expectResult);
+    });
+
+    test('check encode', () => {
+        const type = 'hex';
+        const data = '01020304';
+        const result = IpcDataHelper.encode(type, data);
+        const expectResult = {
+            type,
+            data
+        };
         expect(result).toEqual(expectResult);
     });
 });
