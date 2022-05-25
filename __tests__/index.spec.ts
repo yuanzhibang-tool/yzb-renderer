@@ -21,6 +21,45 @@ class MockYzbNative {
 
 import { IpcRendererWorker, IpcRenderer, IpcDataHelper } from '../src/index';
 
+describe('IpcDataHelper check', () => {
+    test('check toBase64', () => {
+        const inputValue = [0x01, 0x02, 0x03, 0x04];
+        const result = IpcDataHelper.toBase64(inputValue as any);
+        const expectResult = 'AQIDBA==';
+        expect(result).toEqual(expectResult);
+    });
+    test('check fromBase64', () => {
+        const inputValue = 'AQIDBA==';
+        const result = IpcDataHelper.fromBase64(inputValue);
+        const expectResult = new Uint8Array(4);
+        expectResult[0] = 0x01;
+        expectResult[1] = 0x02;
+        expectResult[2] = 0x03;
+        expectResult[3] = 0x04;
+        expect(result).toEqual(expectResult);
+    });
+    test('check hexToBytes', () => {
+        const inputValue = '01020304';
+        const result = IpcDataHelper.hexToBytes(inputValue);
+        const expectResult = new Uint8Array(4);
+        expectResult[0] = 0x01;
+        expectResult[1] = 0x02;
+        expectResult[2] = 0x03;
+        expectResult[3] = 0x04;
+        expect(result).toEqual(expectResult);
+    });
+
+    test('check bytesToHex', () => {
+        const inputValue = new Uint8Array(4);
+        inputValue[0] = 0x01;
+        inputValue[1] = 0x02;
+        inputValue[2] = 0x03;
+        inputValue[3] = 0x04;
+        const result = IpcDataHelper.bytesToHex(inputValue);
+        const expectResult = '01020304';
+        expect(result).toEqual(expectResult);
+    });
+});
 
 describe('IpcRendererWorker check', () => {
     test('check constructor', () => {
@@ -306,24 +345,5 @@ describe('IpcRenderer check', () => {
             expect(message).toEqual(testMessage2);
         });
         yzb.native.messageCallback.next(testMessage2);
-    });
-});
-
-describe('IpcDataHelper check', () => {
-    test('check toBase64', () => {
-        const inputValue = [0x01, 0x02, 0x03, 0x04];
-        const result = IpcDataHelper.toBase64(inputValue as any);
-        const expectResult = 'AQIDBA==';
-        expect(result).toEqual(expectResult);
-    });
-    test('check fromBase64', () => {
-        const inputValue = 'AQIDBA==';
-        const result = IpcDataHelper.fromBase64(inputValue);
-        const expectResult = new Uint8Array(4);
-        expectResult[0] = 0x01;
-        expectResult[1] = 0x02;
-        expectResult[2] = 0x03;
-        expectResult[3] = 0x04;
-        expect(result).toEqual(expectResult);
     });
 });

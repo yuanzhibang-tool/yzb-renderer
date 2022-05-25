@@ -30,11 +30,14 @@ export class IpcDataHelper {
     return u8Array;
   }
   static hexToBytes(hex: string) {
-    const bytes: Array<number> = [];
+    const u8Array = new Uint8Array(hex.length / 2);
     for (let c = 0; c < hex.length; c += 2) {
-      bytes.push(parseInt(hex.substring(c, 2), 16));
+      const subString = hex.substring(c, c + 2);
+      const value = parseInt(subString, 16);
+      const index = c / 2;
+      u8Array[index] = value;
     }
-    return bytes;
+    return u8Array;
   }
 
   static bytesToHex(bytes: Uint8Array) {
