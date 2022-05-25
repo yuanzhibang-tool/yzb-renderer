@@ -1,5 +1,5 @@
 declare const yzb: any;
-import { TextEncoder, TextDecoder } from '@sinonjs/text-encoding';
+import { TextDecoder } from '@sinonjs/text-encoding';
 
 class MockYzbNative {
     nextCallbackMap = new Map();
