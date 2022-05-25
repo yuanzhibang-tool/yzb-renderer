@@ -316,4 +316,14 @@ describe('IpcDataHelper check', () => {
         const expectResult = 'AQIDBA==';
         expect(result).toEqual(expectResult);
     });
+    test('check fromBase64', () => {
+        const inputValue = 'AQIDBA==';
+        const result = IpcDataHelper.fromBase64(inputValue);
+        const expectResult = new Uint8Array(4);
+        expectResult[0] = 0x01;
+        expectResult[1] = 0x02;
+        expectResult[2] = 0x03;
+        expectResult[3] = 0x04;
+        expect(result).toEqual(expectResult);
+    });
 });

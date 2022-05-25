@@ -17,10 +17,17 @@ export interface IpcData {
  */
 export class IpcDataHelper {
   static toBase64(u8: Uint8Array) {
-    return btoa(String.fromCharCode.apply(null, u8 as any));
+    return window.btoa(String.fromCharCode.apply(null, u8 as any));
   }
-  static fromBase64(str: string) {
-    return atob(str).split('').map((c) => { c.charCodeAt(0); });
+  static fromBase64(base64: string) {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const u8Array = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      const indexValue = binaryString.charCodeAt(i);
+      u8Array[i] = indexValue;
+    }
+    return u8Array;
   }
   static hexToBytes(hex: string) {
     const bytes: Array<number> = [];
