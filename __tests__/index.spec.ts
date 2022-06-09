@@ -227,7 +227,7 @@ describe('IpcRendererWorker check', () => {
 
         const data = {
             data: {
-                process_name: exeName,
+                exe_name: exeName,
                 message: {
                     topic: testTopic,
                     data: testTopicMessage
@@ -264,7 +264,7 @@ describe('IpcRendererWorker check', () => {
         };
         const data = {
             data: {
-                process_name: exeName,
+                exe_name: exeName,
                 message: {
                     topic: testTopic,
                     message: testTopicMessage
