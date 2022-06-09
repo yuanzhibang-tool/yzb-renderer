@@ -196,7 +196,7 @@ export class IpcRendererWorker {
   send(topic: string, topicMessage: any = null, nextCallback: ((result: any) => void) | null = null, errorCallbck: ((error: any) => void) | null = null, completeCallback: (() => void) | null = null): void {
     const data: any = {
       data: {
-        process_name: this.exeName,
+        exe_name: this.exeName,
         message: {
           topic,
           message: topicMessage
@@ -225,7 +225,7 @@ export class IpcRendererWorker {
     return new Promise((resolve, reject): any => {
       const data = {
         data: {
-          process_name: this.exeName,
+          exe_name: this.exeName,
           message: {
             topic,
             message: topicMessage

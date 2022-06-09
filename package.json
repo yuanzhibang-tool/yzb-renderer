@@ -1,6 +1,6 @@
 {
   "name": "@yuanzhibang/renderer",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "猿之棒渲染端帮助类",
   "main": "commonjs/index.js",
   "module": "es6/index.js",
