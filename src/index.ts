@@ -1,5 +1,17 @@
 declare const yzb: any;
 
+export enum ExtensionEventMessageTopicType {
+  ON_WILL_INIT = '__on_will_init',
+  ON_INIT = '__on_init',
+  ON_WILL_EXIT = '__on_will_exit',
+  ON_ECHO_MESSAGE = '__on_echo_message',
+  ON_EXIT = '__on_exit',
+  ON_ERROR = '__on_exit',
+  ON_CLOSE = '__on_close',
+  ON_STDERR = '__on_stderr',
+  ON_STDOUT = '__on_stdout',
+}
+
 export interface IpcData {
 
   /**
@@ -119,6 +131,35 @@ export class IpcRendererWorker {
    */
   constructor(exeName: string) {
     this.exeName = exeName;
+  }
+
+  // !生命周期相关函数
+  onWillInit(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_WILL_INIT, callback);
+  }
+  onInit(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_INIT, callback);
+  }
+  onWillExit(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_WILL_EXIT, callback);
+  }
+  onExit(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_EXIT, callback);
+  }
+  onEchoMessage(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_ECHO_MESSAGE, callback);
+  }
+  onError(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_ERROR, callback);
+  }
+  onClose(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_CLOSE, callback);
+  }
+  onStdError(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_STDERR, callback);
+  }
+  onStdOut(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_STDOUT, callback);
   }
 
   /**
