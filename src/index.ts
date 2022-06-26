@@ -1,10 +1,10 @@
 declare const yzb: any;
 
 export enum ExtensionEventMessageTopicType {
+  ON_START = '__on_start',
   ON_WILL_INIT = '__on_will_init',
   ON_INIT = '__on_init',
   ON_WILL_EXIT = '__on_will_exit',
-  ON_ECHO_MESSAGE = '__on_echo_message',
   ON_EXIT = '__on_exit',
   ON_ERROR = '__on_exit',
   ON_CLOSE = '__on_close',
@@ -134,30 +134,75 @@ export class IpcRendererWorker {
   }
 
   // !生命周期相关函数
+
+  /**
+   * 在process在执行时候调用,代表猿之棒客户端已经启动该process,该回调由猿之棒客户端触发
+   * @param 对应生命周期需要执行的回调 
+   */
+  onStart(callback: (message: any) => void): void {
+    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_START, callback);
+  }
+
+  /**
+   * 在process将要初始化的时候调用,代表已经进入process处理阶段,该回调由extension调用触发
+   * @param 对应生命周期需要执行的回调 
+   */
   onWillInit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_WILL_INIT, callback);
   }
+
+  /**
+   * 在process完成初始化的时候调用,代表已经完成process初始化,该回调由extension调用触发
+   * @param 对应生命周期需要执行的回调 
+   */
   onInit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_INIT, callback);
   }
+
+  /**
+   * 在process主动退出前调用,该回调由extension调用触发
+   * @param 对应生命周期需要执行的回调 
+   */
   onWillExit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_WILL_EXIT, callback);
   }
+
+  /**
+   * 在process退出时调用,该回调由猿之棒客户端触发,由node child_process exit事件触发,具体参考:https://nodejs.org/api/child_process.html#event-exit
+   * @param 对应生命周期需要执行的回调 
+   */
   onExit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_EXIT, callback);
   }
-  onEchoMessage(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_ECHO_MESSAGE, callback);
-  }
+
+  /**
+   * 在process出现错误时调用,该回调由猿之棒客户端触发,由node child_process error事件触发,具体参考:https://nodejs.org/api/child_process.html#event-error
+   * @param 对应生命周期需要执行的回调 
+   */
   onError(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_ERROR, callback);
   }
+
+  /**
+   * 在process关闭时调用,该回调由猿之棒客户端触发,由node child_process close事件触发,具体参考:https://nodejs.org/api/child_process.html#event-close
+   * @param 对应生命周期需要执行的回调 
+   */
   onClose(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_CLOSE, callback);
   }
+
+  /**
+   * 在process触发stderr时调用,该回调由猿之棒客户端触发,由node child_process.stderr data事件触发,具体参考:https://nodejs.org/api/child_process.html#subprocessstderr
+   * @param 对应生命周期需要执行的回调 
+   */
   onStdError(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_STDERR, callback);
   }
+
+  /**
+   * 在process触发stdout时调用,该回调由猿之棒客户端触发,由node child_process.stdout data事件触发,具体参考:https://nodejs.org/api/child_process.html#subprocessstdout
+   * @param 对应生命周期需要执行的回调 
+   */
   onStdOut(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_STDOUT, callback);
   }
