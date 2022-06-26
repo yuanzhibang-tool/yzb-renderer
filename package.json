@@ -34,5 +34,8 @@
       "require": "./commonjs/index.js",
       "types": "./es6/index.d.ts"
     }
+  },
+  "dependencies": {
+    "@yuanzhibang/common": "^0.0.2"
   }
 }
