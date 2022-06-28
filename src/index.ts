@@ -1,4 +1,4 @@
-import { ExtensionEventMessageTopicType } from '@yuanzhibang/common';
+import { ExtensionLifecycleEventMessageTopic, ExtensionRendererMessageTopic } from '@yuanzhibang/common';
 declare const yzb: any;
 
 export interface IpcData {
@@ -108,11 +108,11 @@ export class IpcRendererWorker {
   /**
    * 内部变量无需关注,on保存的回调保存map
    */
-  messageCallbackMap = new Map<string, (message: any) => void>();
+  private messageCallbackMap = new Map<string, (message: any) => void>();
   /**
    * 内部变量无需关注,once保存的回调保存map
    */
-  onceMessageCallbackMap = new Map<string, (message: any) => void>();
+  private onceMessageCallbackMap = new Map<string, (message: any) => void>();
 
   /**
    * 创建类实例
@@ -129,7 +129,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onStart(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_START, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_START, callback);
   }
 
   /**
@@ -137,7 +137,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onWillInit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_WILL_INIT, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_INIT, callback);
   }
 
   /**
@@ -145,7 +145,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onInit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_INIT, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_INIT, callback);
   }
 
   /**
@@ -153,7 +153,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onWillExit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_WILL_EXIT, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_EXIT, callback);
   }
 
   /**
@@ -161,7 +161,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onExit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_EXIT, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_EXIT, callback);
   }
 
   /**
@@ -169,7 +169,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onError(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_ERROR, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_ERROR, callback);
   }
 
   /**
@@ -177,7 +177,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onClose(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_CLOSE, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_CLOSE, callback);
   }
 
   /**
@@ -185,7 +185,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onStdError(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_STDERR, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDERR, callback);
   }
 
   /**
@@ -193,7 +193,7 @@ export class IpcRendererWorker {
    * @param 对应生命周期需要执行的回调 
    */
   onStdOut(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionEventMessageTopicType.ON_STDOUT, callback);
+    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDOUT, callback);
   }
 
   /**
@@ -201,7 +201,7 @@ export class IpcRendererWorker {
    * @param topic 消息的topic
    * @param message topic消息的消息体
    */
-  onMessage(topic: string, message: any): void {
+  processMessage(topic: string, message: any): void {
     if (this.messageCallbackMap.has(topic)) {
       const callback = this.messageCallbackMap.get(topic);
       if (callback) {
@@ -316,6 +316,25 @@ export class IpcRendererWorker {
       yzb.native.sendProcessMessage(data);
     });
   }
+
+  /**
+   * 向进程发送用户退出消息
+   * @param message 退出的消息,用以给process做一些处理,可以是null
+   * @returns promise process收到消息后给renderer的回调promise
+   */
+  exit(message: any = null): Promise<any> {
+    return this.sendPromise(ExtensionRendererMessageTopic.USER_EXIT, message);
+  }
+
+  /**
+   * 向进程发送获取属性的消息
+   * @param message 获取属性需要的消息,用以给process做一些处理,可以是null
+   * @returns promise process收到消息后给renderer的回调promise
+   */
+  getProperty(message: any = null): Promise<any> {
+    return this.sendPromise(ExtensionRendererMessageTopic.GET_PROPERTY, message);
+  }
+
 }
 
 
@@ -327,11 +346,11 @@ export class IpcRenderer {
   /**
    * 内部变量无需关注,存储worker的map
    */
-  messageWorkerMap = new Map<string, IpcRendererWorker>();
+  private messageWorkerMap = new Map<string, IpcRendererWorker>();
   /**
    * 内部变量无需关注,除了topic消息以外,其他拓展进程发送来的消息监听回调
    */
-  otherMessageCallback: ((message: any) => void) | null = null;
+  private otherMessageCallback: ((message: any) => void) | null = null;
 
   /**
    * 创建类实例
@@ -356,7 +375,7 @@ export class IpcRenderer {
               if (this.messageWorkerMap.has(exeName)) {
                 const worker = this.messageWorkerMap.get(exeName);
                 if (worker !== null && typeof worker === 'object') {
-                  worker.onMessage(messageTopic, messageTopicMessage);
+                  worker.processMessage(messageTopic, messageTopicMessage);
                 } else {
                   this.messageWorkerMap.delete(exeName);
                 }
