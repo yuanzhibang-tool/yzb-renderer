@@ -319,20 +319,20 @@ export class IpcRendererWorker {
 
   /**
    * 向进程发送用户退出消息
-   * @param params 退出的参数
+   * @param message 退出的消息,用以给process做一些处理,可以是null
    * @returns promise process收到消息后给renderer的回调promise
    */
-  exit(params: any = null): Promise<any> {
-    return this.sendPromise(ExtensionRendererMessageTopic.USER_EXIT, params);
+  exit(message: any = null): Promise<any> {
+    return this.sendPromise(ExtensionRendererMessageTopic.USER_EXIT, message);
   }
 
   /**
    * 向进程发送获取属性的消息
-   * @param params 获取属性需要的参数,可以为null
+   * @param message 获取属性需要的消息,用以给process做一些处理,可以是null
    * @returns promise process收到消息后给renderer的回调promise
    */
-  getProperty(params: any = null): Promise<any> {
-    return this.sendPromise(ExtensionRendererMessageTopic.GET_PROPERTY, params);
+  getProperty(message: any = null): Promise<any> {
+    return this.sendPromise(ExtensionRendererMessageTopic.GET_PROPERTY, message);
   }
 
 }
