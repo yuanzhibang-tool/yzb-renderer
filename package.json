@@ -36,6 +36,6 @@
     }
   },
   "dependencies": {
-    "@yuanzhibang/common": "^0.0.2"
+    "@yuanzhibang/common": "^0.0.3"
   }
 }
