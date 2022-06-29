@@ -25,6 +25,9 @@ export class IpcDataHelper {
    * @returns 转换成功的字符串
    */
   static uint8ArrayToString(uint8Array: Uint8Array, encoding: string): string {
+    if (Array.isArray(uint8Array)) {
+      uint8Array = Uint8Array.from(uint8Array);
+    }
     const decoder = new TextDecoder(encoding);
     const result = decoder.decode(uint8Array);
     return result;
@@ -35,6 +38,9 @@ export class IpcDataHelper {
    * @returns 转换后的base64
    */
   static uint8ArraytoBase64(uint8Array: Uint8Array): string {
+    if (Array.isArray(uint8Array)) {
+      uint8Array = Uint8Array.from(uint8Array);
+    }
     return window.btoa(String.fromCharCode.apply(null, uint8Array as any));
   }
 
@@ -43,11 +49,14 @@ export class IpcDataHelper {
    * @param uint8Array 输入的uint8Array
    * @returns 转换后的hex
    */
-  static uint8ArrayToHex(bytes: Uint8Array): string {
+  static uint8ArrayToHex(uint8Array: Uint8Array): string {
+    if (Array.isArray(uint8Array)) {
+      uint8Array = Uint8Array.from(uint8Array);
+    }
     const hex: Array<string> = [];
     // tslint:disable-next-line: prefer-for-of
-    for (let i = 0; i < bytes.length; i++) {
-      const current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+    for (let i = 0; i < uint8Array.length; i++) {
+      const current = uint8Array[i] < 0 ? uint8Array[i] + 256 : uint8Array[i];
       // tslint:disable-next-line: no-bitwise
       hex.push((current >>> 4).toString(16));
       // tslint:disable-next-line: no-bitwise
