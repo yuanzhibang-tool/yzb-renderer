@@ -24,7 +24,14 @@ class MockYzbNative {
 import { IpcRendererWorker, IpcRenderer, IpcDataHelper } from '../src/index';
 
 describe('IpcDataHelper check', () => {
-
+    test('check array covert to uint8Array', () => {
+        let uint8Array: any = null;
+        const inputValue = [1, 2, 3, 4];
+        if (Array.isArray(inputValue)) {
+            uint8Array = Uint8Array.from(inputValue);
+        }
+        expect(uint8Array instanceof Uint8Array).toEqual(true);
+    });
     test('check uint8ArrayToString', () => {
         const inputValue = new Uint8Array(4);
         inputValue[0] = 0x31;
@@ -103,12 +110,12 @@ describe('IpcRendererWorker check', () => {
         instance.once(testTopic, (message: any) => {
             expect(message).toEqual(testTopicMessage);
         });
-        instance.onMessage(testTopic, testTopicMessage);
+        instance.processMessage(testTopic, testTopicMessage);
 
         instance.on(testTopic, (message: any) => {
             expect(message).toEqual(testTopicMessage);
         });
-        instance.onMessage(testTopic, testTopicMessage);
+        instance.processMessage(testTopic, testTopicMessage);
     });
 
     test('check on', () => {
@@ -317,7 +324,7 @@ describe('IpcRenderer check', () => {
         const topicMessage = {
             type: 'yzb_ipc_renderer_message',
             name: exeName,
-            message: {
+            data: {
                 topic: testTopic,
                 message: testTopicMessage,
             }

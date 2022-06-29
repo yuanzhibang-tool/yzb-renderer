@@ -117,11 +117,11 @@ export class IpcRendererWorker {
   /**
    * 内部变量无需关注,on保存的回调保存map
    */
-  private messageCallbackMap = new Map<string, (message: any) => void>();
+  messageCallbackMap = new Map<string, (message: any) => void>();
   /**
    * 内部变量无需关注,once保存的回调保存map
    */
-  private onceMessageCallbackMap = new Map<string, (message: any) => void>();
+  onceMessageCallbackMap = new Map<string, (message: any) => void>();
 
   /**
    * 创建类实例
@@ -355,11 +355,11 @@ export class IpcRenderer {
   /**
    * 内部变量无需关注,存储worker的map
    */
-  private messageWorkerMap = new Map<string, IpcRendererWorker>();
+  messageWorkerMap = new Map<string, IpcRendererWorker>();
   /**
    * 内部变量无需关注,除了topic消息以外,其他拓展进程发送来的消息监听回调
    */
-  private otherMessageCallback: ((message: any) => void) | null = null;
+  otherMessageCallback: ((message: any) => void) | null = null;
 
   /**
    * 创建类实例
