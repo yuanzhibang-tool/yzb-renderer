@@ -131,8 +131,89 @@ export class IpcRendererWorker {
     this.exeName = exeName;
   }
 
-  // !生命周期相关函数
+  /**
+   * 启动可执行文件
+   * @param exeRunConfigData yzb.native.run的data参数,具体请参照:http://doc.yuanzhibang.com/2793386
+   * @returns 启动结果的promise 
+   */
+  run(exeRunConfigData: any): Promise<void> {
+    exeRunConfigData.name = this.exeName;
+    return new Promise<void>((resolve, reject) => {
+      const data = {
+        data: exeRunConfigData,
+        next: () => {
+          resolve();
+        },
+        error: (error: any) => {
+          reject(error);
+        },
+      };
+      yzb.native.run(data);
+    });
+  }
 
+  /**
+   * 停止可执行文件
+   * @returns 停止结果的promise 
+   */
+  stop(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const data = {
+        data: { name: this.exeName },
+        next: () => {
+          resolve();
+        },
+        error: (error: any) => {
+          reject(error);
+        },
+      };
+      yzb.native.stop(data);
+    });
+  }
+
+  /**
+   * 获取worker对应的可执行文件process是否正在运行
+   * @returns 获取结果的promise 
+   */
+  isRunning(): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      this.getProcessInfo().then((processInfo: any) => {
+        let isRunning = false;
+        if (processInfo) {
+          isRunning = processInfo.is_running;
+        }
+        resolve(isRunning);
+      }
+      ).catch((error) => {
+        reject(error);
+      });
+    });
+  }
+
+  /**
+   * 获取worker对应的可执行文件process信息,当前仅返回is_running,请使用isRunning方法
+   * @returns 获取结果的promise 
+   */
+  getProcessInfo(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const data = {
+        data: {},
+        next: (result: object) => {
+          let processInfo = null;
+          if (result.hasOwnProperty(this.exeName)) {
+            processInfo = result[this.exeName];
+          }
+          resolve(processInfo);
+        },
+        error: (error: any) => {
+          reject(error);
+        },
+      };
+      yzb.native.getProcessInfo(data);
+    });
+  }
+
+  // !生命周期相关函数
   /**
    * 在process在执行时候调用,代表猿之棒客户端已经启动该process,该回调由猿之棒客户端触发
    * @param 对应生命周期需要执行的回调 
