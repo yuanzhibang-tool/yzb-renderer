@@ -1,4 +1,5 @@
 import { ExtensionLifecycleEventMessageTopic, ExtensionRendererMessageTopic } from '@yuanzhibang/common';
+import { isPromise } from 'util/types';
 declare const yzb: any;
 
 export interface IpcData {
@@ -522,5 +523,62 @@ export class IpcRenderer {
     this.otherMessageCallback = callback;
   }
 }
+export interface JsConfigInfo {
+  timestamp: string | number;
+  nonce_str: string;
+  signature: string;
+}
 
+export class Renderer {
+  constructor() { }
+  static config(appId: string, jsApiList: Array<string>, getJsSignInfo: Promise<JsConfigInfo> | JsConfigInfo): Promise<void> {
+    const thenAction = (jsApiCheckInfo: any, resolve, reject) => {
+      jsApiCheckInfo.app_id = appId;
+      jsApiCheckInfo['js_api_list'] = jsApiList;
+      jsApiCheckInfo['is_spa'] = true; // !是否为单页应用,单页面应用会对域名进行授权,域名下切换path不需要重新验证,否则验证path
+      const config = {
+        data: jsApiCheckInfo,
+        next: () => {
+          resolve();
+        },
+        error: (error) => {
+          reject(error);
+        }
+      };
+      yzb.core.config(config);
+    };
+    return new Promise((resolve, reject) => {
+      if (isPromise(getJsSignInfo)) {
+        getJsSignInfo.then((jsApiCheckInfo: any) => {
+          thenAction(jsApiCheckInfo, resolve, reject);
+        }
+        ).catch((error) => {
+          reject(error);
+        });
+      } else {
+        thenAction(getJsSignInfo, resolve, reject);
+      }
+    });
+  }
+
+  static getAuthCode(appId: string, jsApiList: Array<string>, getJsSignInfo: Promise<JsConfigInfo> | JsConfigInfo): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      Renderer.config(appId, jsApiList, getJsSignInfo).then(() => {
+        const config = {
+          data: { app_id: appId },
+          next: (code: string) => {
+            resolve(code);
+          },
+          error: (error) => {
+            reject(error);
+          }
+        };
+        yzb.core.requestAuthCode(config);
+      }
+      ).catch((error) => {
+        reject(error);
+      });
+    });
+  };
+}
 export const ipc = new IpcRenderer();
