@@ -523,14 +523,29 @@ export class IpcRenderer {
     this.otherMessageCallback = callback;
   }
 }
+
+/**
+ * core.config 中需要的参数类型
+ */
 export interface JsConfigInfo {
   timestamp: string | number;
   nonce_str: string;
   signature: string;
 }
 
+
+/**
+ * 协助处理yzb bridge工作的主类
+ */
 export class Renderer {
-  constructor() { }
+
+  /**
+   * 封装的core.config的方法,请注意该方法请在yzb.ready回调之后调用,对于angular等应用架构,请在返回的promise回调中使用zone
+   * @param appId 应用的appId
+   * @param jsApiList core.config中传入的js方法列表,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
+   * @param getJsSignInfo core.config的js验证参数数据,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
+   * @returns Promise 返回结果的异步回调 
+   */
   static config(appId: string, jsApiList: Array<string>, getJsSignInfo: Promise<JsConfigInfo> | JsConfigInfo): Promise<void> {
     const thenAction = (jsApiCheckInfo: any, resolve, reject) => {
       jsApiCheckInfo.app_id = appId;
@@ -561,6 +576,14 @@ export class Renderer {
     });
   }
 
+
+  /**
+   * 封装的一步获取auth code的方法,具体参照: https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=corerequestauthcode
+   * @param appId 应用的appId
+   * @param jsApiList core.config中传入的js方法列表,此时必须传入,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
+   * @param getJsSignInfo core.config的js验证参数数据,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
+   * @returns Promise 返回结果的异步回调 
+   */
   static getAuthCode(appId: string, jsApiList: Array<string>, getJsSignInfo: Promise<JsConfigInfo> | JsConfigInfo): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       Renderer.config(appId, jsApiList, getJsSignInfo).then(() => {
@@ -581,4 +604,5 @@ export class Renderer {
     });
   };
 }
+
 export const ipc = new IpcRenderer();
