@@ -1,5 +1,4 @@
 import { ExtensionLifecycleEventMessageTopic, ExtensionRendererMessageTopic } from '@yuanzhibang/common';
-import { isPromise } from 'util/types';
 declare const yzb: any;
 
 export interface IpcData {
@@ -563,8 +562,9 @@ export class Renderer {
       yzb.core.config(config);
     };
     return new Promise((resolve, reject) => {
+      const isPromise = v => typeof v === 'object' && typeof v.then === 'function';
       if (isPromise(getJsSignInfo)) {
-        getJsSignInfo.then((jsApiCheckInfo: any) => {
+        (getJsSignInfo as Promise<JsConfigInfo>).then((jsApiCheckInfo: any) => {
           thenAction(jsApiCheckInfo, resolve, reject);
         }
         ).catch((error) => {
