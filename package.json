@@ -38,6 +38,6 @@
     }
   },
   "dependencies": {
-    "@yuanzhibang/common": "^0.0.3"
+    "@yuanzhibang/common": "^0.0.6"
   }
 }
