@@ -1,4 +1,5 @@
 import { ExtensionLifecycleEventMessageTopic, ExtensionRendererMessageTopic } from '@yuanzhibang/common';
+import { nanoid } from 'nanoid';
 declare const yzb: any;
 
 export interface IpcData {
@@ -108,6 +109,110 @@ export class IpcDataHelper {
     };
   }
 }
+
+export class YzbNativeMock {
+  /**
+ * 调试服务器地址
+ */
+  debuggerServerUrl: string;
+
+  /**
+  * 调试服务器socket链接
+  */
+  debuggerSocket: WebSocket;
+
+  configMap = new Map<string, any>();
+
+  constructor(debuggerServerUrl: 'localhost:8889') {
+    this.debuggerServerUrl = debuggerServerUrl;
+    this.debuggerSocket = new WebSocket(`ws://${this.debuggerServerUrl}`);
+    this.debuggerSocket.addEventListener('open', (event) => {
+      console.log('调试服务器链接成功!');
+    });
+    this.debuggerSocket.addEventListener('message', (event) => {
+      const data = JSON.parse(event.data);
+      const identity = data.identity;
+      const type = data.type;
+      const result = data.result;
+      if (identity) {
+        if (typeof this.configMap[identity] !== 'undefined') {
+          if (typeof this.configMap[identity][type] !== 'undefined') {
+            const callback = this.configMap[identity][type];
+            callback(result);
+          }
+        }
+      }
+    });
+  }
+
+  mockYzbNative() {
+    yzb.native = {
+      run: (config) => {
+        this.sendMessageToDebuggerServer('run', config);
+      },
+      stop: (config) => {
+        this.sendMessageToDebuggerServer('stop', config);
+      },
+      setCallback: (config) => {
+        this.sendMessageToDebuggerServer('setCallback', config, 'setCallback');
+      },
+      getProcessInfo: (config) => {
+        this.sendMessageToDebuggerServer('getProcessInfo', config);
+      },
+      sendProcessMessage: (config) => {
+        this.sendMessageToDebuggerServer('sendProcessMessage', config);
+      },
+      getNativeInfo: (config) => {
+        this.sendMessageToDebuggerServer('getNativeInfo', config);
+      },
+    };
+  }
+
+  sendMessageToDebuggerServer(nativeName: string, config: any, identity: string | null = null) {
+    if (typeof config.data === 'undefined') {
+      config.data = {};
+    }
+    if (!identity) {
+      identity = nanoid();
+    }
+
+    const storeObject = {
+      identity,
+      data: config.data,
+      cancel: (result: any) => {
+        if (config.cancel) {
+          config.cancel(result.cancel);
+        }
+      },
+      next: (result: any) => {
+        if (config.next) {
+          config.next(result.result);
+        }
+      },
+      error: (result: any) => {
+        if (config.error) {
+          config.error(result.error);
+        }
+      },
+      complete: () => {
+        if (config.complete) {
+          config.complete();
+        }
+      }
+    };
+
+    this.configMap[identity] = storeObject;
+
+    const message = {
+      identity,
+      nativeName,
+      data: config.data
+    };
+    const messageString = JSON.stringify(message);
+    this.debuggerSocket.send(messageString);
+  }
+}
+
 export class IpcRendererWorker {
   /**
    * 进程名
