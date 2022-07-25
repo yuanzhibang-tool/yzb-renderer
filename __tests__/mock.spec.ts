@@ -3,23 +3,22 @@ global.yzb = {};
 declare var yzb: any;
 const mock = new YzbNativeMock();
 mock.mockYzbNative();
-
+mock.debuggerSocket.send = (message) => { return message; };
 describe('YzbNativeMock check', () => {
+    const result = { x: 1 };
+    expect.hasAssertions();
     test('check run', () => {
         const config = {
             data: { exe_name: 'test_exe' },
             next: (result: any) => {
-                console.log(result);
+                expect(result).toEqual(result);
             }
         };
         const messageSend = yzb.native.run(config);
-        expect(true).toEqual(true);
         const message = {
             identity: messageSend.identity,
             type: 'next',
-            result: {
-                x: 1
-            }
+            result
         };
         mock.processMessage(message);
     });

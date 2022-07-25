@@ -11,8 +11,16 @@ export class YzbNativeMock {
     */
     debuggerSocket: WebSocket;
 
+    /**
+     * 无需关注,调用配置存储
+     */
     configMap = new Map<string, any>();
 
+
+    /**
+     * 初始化函数
+     * @param [debuggerServerUrl] 调试的ws地址,需要配合@yuanzhibang/extension-debugger
+     */
     constructor(debuggerServerUrl = 'localhost:8889') {
         this.debuggerServerUrl = debuggerServerUrl;
         this.debuggerSocket = new WebSocket(`ws://${this.debuggerServerUrl}`);
@@ -25,6 +33,10 @@ export class YzbNativeMock {
         });
     }
 
+    /**
+     * 处理ws调试服务器发送来的消息
+     * @param message 
+     */
     processMessage(message: any) {
         const identity = message.identity;
         const type = message.type;
@@ -37,6 +49,10 @@ export class YzbNativeMock {
         }
     }
 
+
+    /**
+     * Mocks yzb.native方法
+     */
     mockYzbNative() {
         yzb.native = {
             run: (config) => {
@@ -60,6 +76,13 @@ export class YzbNativeMock {
         };
     }
 
+    /**
+     * 内部方法无需关注，发送消息到调试服务器
+     * @param nativeName native的方法名run,stop,setCallback,getProcessInfo,sendProcessMessage,getNativeInfo
+     * @param config 调用方法的配置
+     * @param [identity] 调用识别
+     * @returns  发送的消息体
+     */
     sendMessageToDebuggerServer(nativeName: string, config: any, identity: string | null = null) {
         if (typeof config.data === 'undefined') {
             config.data = {};
@@ -109,10 +132,15 @@ export class YzbNativeMock {
             data: config.data
         };
         const messageString = JSON.stringify(message);
-        // this.debuggerSocket.send(messageString);
+        this.debuggerSocket.send(messageString);
         return message;
     }
 
+    /**
+     * 生成唯一的id
+     * @param length 生成的长度
+     * @returns 对应长度的随机字符串
+     */
     makeid(length) {
         var result = '';
         var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
