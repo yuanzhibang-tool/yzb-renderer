@@ -1,4 +1,4 @@
-import { YzbNativeMock } from '../src/mock';
+import { YzbNativeMock } from '../src/index';
 global.yzb = {};
 declare var yzb: any;
 const mock = new YzbNativeMock();

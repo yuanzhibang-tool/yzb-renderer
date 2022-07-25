@@ -36,11 +36,6 @@
       "import": "./es6/index.js",
       "require": "./commonjs/index.js",
       "types": "./es6/index.d.ts"
-    },
-    "./mock": {
-      "import": "./es6/mock.js",
-      "require": "./commonjs/mock.js",
-      "types": "./es6/mock.d.ts"
     }
   },
   "dependencies": {
