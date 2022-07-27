@@ -609,7 +609,7 @@ export class Renderer {
   };
 }
 
-export class YzbNativeMock {
+export class IpcRendererWorkerMock {
   /**
  * 调试服务器地址
  */
@@ -618,13 +618,12 @@ export class YzbNativeMock {
   /**
   * 调试服务器socket链接
   */
-  debuggerSocket: WebSocket;
+  debuggerSocket: WebSocket | null = null;
 
   /**
    * 无需关注,调用配置存储
    */
   configMap = new Map<string, any>();
-
 
   /**
    * 初始化函数
@@ -632,13 +631,21 @@ export class YzbNativeMock {
    */
   constructor(debuggerServerUrl = 'localhost:8889') {
     this.debuggerServerUrl = debuggerServerUrl;
+    this.initWsConnection(debuggerServerUrl);
+  }
+
+  initWsConnection(debuggerServerUrl) {
+    this.debuggerServerUrl = debuggerServerUrl;
     this.debuggerSocket = new WebSocket(`ws://${this.debuggerServerUrl}`);
     this.debuggerSocket.addEventListener('open', (event) => {
-      console.log('调试服务器链接成功!');
+      console.log('ws debugger server connected!');
     });
     this.debuggerSocket.addEventListener('message', (event) => {
       const data = JSON.parse(event.data);
       this.processMessage(data);
+    });
+    this.debuggerSocket.addEventListener('close', (event) => {
+      console.log('ws debugger server disconnected!');
     });
   }
 
@@ -647,41 +654,138 @@ export class YzbNativeMock {
    * @param message 
    */
   processMessage(message: any) {
-    const identity = message.identity;
     const type = message.type;
-    const result = message.result;
-    if (identity) {
-      if (this.configMap.has(identity)) {
-        const callback = this.configMap.get(identity)[type];
-        callback(result);
+    if (type === 'yzb_ipc_renderer_message' || type === 'message') {
+      // 是callback回调
+      const callbackMessage = {
+        identity: "native_setCallback_config",
+        result: message
+      };
+      yzb.runCallback(callbackMessage);
+    } else {
+      const identity = message.identity;
+      const result = message.result;
+      if (identity) {
+        if (this.configMap.has(identity)) {
+          const callback = this.configMap.get(identity)[type];
+          callback(result);
+        }
       }
     }
   }
 
 
+
   /**
    * Mocks yzb.native方法
    */
-  mockYzbNative() {
-    yzb.native = {
-      run: (config) => {
-        return this.sendMessageToDebuggerServer('run', config);
-      },
-      stop: (config) => {
+  mockWorker(worker: any) {
+    worker.run = (exeRunConfigData: any): Promise<void> => {
+      exeRunConfigData.name = worker.exeName;
+      return new Promise<void>((resolve, reject) => {
+        const config = {
+          data: exeRunConfigData,
+          next: () => {
+            resolve();
+          },
+          error: (error: any) => {
+            reject(error);
+          },
+        };
+        this.sendMessageToDebuggerServer('run', config);
+      });
+    };
+
+    worker.stop = (): Promise<void> => {
+      return new Promise<void>((resolve, reject) => {
+        const config = {
+          data: { name: worker.exeName },
+          next: () => {
+            resolve();
+          },
+          error: (error: any) => {
+            reject(error);
+          },
+        };
         return this.sendMessageToDebuggerServer('stop', config);
-      },
-      setCallback: (config) => {
-        return this.sendMessageToDebuggerServer('setCallback', config, 'setCallback');
-      },
-      getProcessInfo: (config) => {
-        return this.sendMessageToDebuggerServer('getProcessInfo', config);
-      },
-      sendProcessMessage: (config) => {
-        return this.sendMessageToDebuggerServer('sendProcessMessage', config);
-      },
-      getNativeInfo: (config) => {
-        return this.sendMessageToDebuggerServer('getNativeInfo', config);
-      },
+      });
+    };
+
+    worker.isRunning = (): Promise<boolean> => {
+      return new Promise<boolean>((resolve, reject) => {
+        worker.getProcessInfo().then((processInfo: any) => {
+          let isRunning = false;
+          if (processInfo) {
+            isRunning = processInfo.is_running;
+          }
+          resolve(isRunning);
+        }
+        ).catch((error) => {
+          reject(error);
+        });
+      });
+    };
+
+    worker.getProcessInfo = (): Promise<any> => {
+      return new Promise<any>((resolve, reject) => {
+        const config = {
+          data: {},
+          next: (result: object) => {
+            let processInfo = null;
+            if (result.hasOwnProperty(worker.exeName)) {
+              processInfo = result[worker.exeName];
+            }
+            resolve(processInfo);
+          },
+          error: (error: any) => {
+            reject(error);
+          },
+        };
+        this.sendMessageToDebuggerServer('getProcessInfo', config);
+      });
+    };
+
+    worker.sendPromise = (topic: string, topicMessage: any): Promise<any> => {
+      return new Promise<any>((resolve, reject) => {
+        const config = {
+          data: {
+            exe_name: worker.exeName,
+            message: {
+              topic,
+              message: topicMessage
+            },
+          },
+          next: (result: object) => {
+            resolve(result);
+          },
+          error: (error: any) => {
+            reject(error);
+          },
+        };
+        this.sendMessageToDebuggerServer('sendProcessMessage', config);
+      });
+    };
+
+    worker.send = (topic: string, topicMessage: any = null, nextCallback: ((result: any) => void) | null = null, errorCallbck: ((error: any) => void) | null = null, completeCallback: (() => void) | null = null): void => {
+      const config: any = {
+        data: {
+          exe_name: worker.exeName,
+          message: {
+            topic,
+            message: topicMessage
+          },
+        }
+      };
+      if (nextCallback) {
+        config.next = nextCallback;
+      }
+      if (errorCallbck) {
+        config.error = errorCallbck;
+      }
+      if (completeCallback) {
+        config.complete = completeCallback;
+      }
+      this.sendMessageToDebuggerServer('sendProcessMessage', config);
     };
   }
 
@@ -741,7 +845,7 @@ export class YzbNativeMock {
       data: config.data
     };
     const messageString = JSON.stringify(message);
-    this.debuggerSocket.send(messageString);
+    this.debuggerSocket?.send(messageString);
     return message;
   }
 
@@ -761,6 +865,7 @@ export class YzbNativeMock {
     return result;
   }
 }
+
 
 
 export const ipc = new IpcRenderer();
