@@ -34,10 +34,10 @@ export class IpcDataHelper {
   }
 
   /**
- * 字符串 转换为 uint8Array, 字符串仅支持utf-8
- * @param sourceString 字符串
- * @returns 转换成功的Uint8Array
- */
+   * 字符串 转换为 uint8Array, 字符串仅支持utf-8
+   * @param sourceString 字符串
+   * @returns 转换成功的Uint8Array
+   */
   static stringToInt8Array(sourceString: string): Uint8Array {
     const decoder = new TextEncoder();
     const result = decoder.encode(sourceString);
