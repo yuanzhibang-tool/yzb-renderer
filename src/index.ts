@@ -318,7 +318,7 @@ export class IpcRendererWorker {
         if (callback) {
           callback(message);
         }
-        this.onceMessageCallbackMap.delete(topic);
+        this.onceMessageCallbackMap.delete(callbackTopic);
       }
     });
   }
