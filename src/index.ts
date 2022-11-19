@@ -1,4 +1,4 @@
-import { ExtensionLifecycleEventMessageTopic, ExtensionRendererMessageTopic } from '@yuanzhibang/common';
+import { ExtensionLifecycleEventMessageTopic, ExtensionRendererMessageTopic, IpcMessageTopic } from '@yuanzhibang/common';
 declare const yzb: any;
 
 export interface IpcData {
@@ -147,7 +147,7 @@ export class IpcRendererWorker {
   /**
    * 启动可执行文件
    * @param exeRunConfigData yzb.native.run的data参数,具体请参照:http://doc.yuanzhibang.com/2793386
-   * @returns 启动结果的promise 
+   * @returns 启动结果的promise
    */
   run(exeRunConfigData: any): Promise<void> {
     exeRunConfigData.name = this.exeName;
@@ -167,7 +167,7 @@ export class IpcRendererWorker {
 
   /**
    * 停止可执行文件
-   * @returns 停止结果的promise 
+   * @returns 停止结果的promise
    */
   stop(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
@@ -186,7 +186,7 @@ export class IpcRendererWorker {
 
   /**
    * 获取worker对应的可执行文件process是否正在运行
-   * @returns 获取结果的promise 
+   * @returns 获取结果的promise
    */
   isRunning(): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
@@ -205,7 +205,7 @@ export class IpcRendererWorker {
 
   /**
    * 获取worker对应的可执行文件process信息,当前仅返回is_running,请使用isRunning方法
-   * @returns 获取结果的promise 
+   * @returns 获取结果的promise
    */
   getProcessInfo(): Promise<any> {
     return new Promise<any>((resolve, reject) => {
@@ -229,7 +229,7 @@ export class IpcRendererWorker {
   // !生命周期相关函数
   /**
    * 在process在执行时候调用,代表猿之棒客户端已经启动该process,该回调由猿之棒客户端触发
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onStart(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_START, callback);
@@ -237,7 +237,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process将要初始化的时候调用,代表已经进入process处理阶段,该回调由extension调用触发
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onWillInit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_INIT, callback);
@@ -245,7 +245,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process完成初始化的时候调用,代表已经完成process初始化,该回调由extension调用触发
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onInit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_INIT, callback);
@@ -253,7 +253,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process主动退出前调用,该回调由extension调用触发
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onWillExit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_EXIT, callback);
@@ -261,7 +261,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process退出时调用,该回调由猿之棒客户端触发,由node child_process exit事件触发,具体参考:https://nodejs.org/api/child_process.html#event-exit
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onExit(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_EXIT, callback);
@@ -269,7 +269,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process出现错误时调用,该回调由猿之棒客户端触发,由node child_process error事件触发,具体参考:https://nodejs.org/api/child_process.html#event-error
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onError(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_ERROR, callback);
@@ -277,7 +277,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process关闭时调用,该回调由猿之棒客户端触发,由node child_process close事件触发,具体参考:https://nodejs.org/api/child_process.html#event-close
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onClose(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_CLOSE, callback);
@@ -285,7 +285,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process触发stderr时调用,该回调由猿之棒客户端触发,由node child_process.stderr data事件触发,具体参考:https://nodejs.org/api/child_process.html#subprocessstderr
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onStdError(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDERR, callback);
@@ -293,7 +293,7 @@ export class IpcRendererWorker {
 
   /**
    * 在process触发stdout时调用,该回调由猿之棒客户端触发,由node child_process.stdout data事件触发,具体参考:https://nodejs.org/api/child_process.html#subprocessstdout
-   * @param 对应生命周期需要执行的回调 
+   * @param callback 对应生命周期需要执行的回调
    */
   onStdOut(callback: (message: any) => void): void {
     this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDOUT, callback);
@@ -305,18 +305,22 @@ export class IpcRendererWorker {
    * @param message topic消息的消息体
    */
   processMessage(topic: string, message: any): void {
-    if (this.messageCallbackMap.has(topic)) {
-      const callback = this.messageCallbackMap.get(topic);
-      if (callback) {
-        callback(message);
+    this.messageCallbackMap.forEach((callback, callbackTopic) => {
+      if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
+        if (callback) {
+          callback(message);
+        }
       }
-    } else if (this.onceMessageCallbackMap.has(topic)) {
-      const callback = this.onceMessageCallbackMap.get(topic);
-      if (callback) {
-        callback(message);
+    });
+
+    this.onceMessageCallbackMap.forEach((callback, callbackTopic) => {
+      if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
+        if (callback) {
+          callback(message);
+        }
+        this.onceMessageCallbackMap.delete(topic);
       }
-      this.onceMessageCallbackMap.delete(topic);
-    } else { }
+    });
   }
   /**
    * 监听拓展进程发送来的topic消息,除非取消监听或者拓展进程生命周期结束,否则该监听一直有效
@@ -555,7 +559,7 @@ export class Renderer {
    * @param appId 应用的appId
    * @param jsApiList core.config中传入的js方法列表,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
    * @param getJsSignInfo core.config的js验证参数数据,支持promise,JsConfigInfo和返回JsConfigInfo以及promise的匿名函数,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
-   * @returns Promise 返回结果的异步回调 
+   * @returns Promise 返回结果的异步回调
    */
   static config(appId: string, jsApiList: Array<string>, getJsSignInfo: Promise<JsConfigInfo> | JsConfigInfo | (() => Promise<JsConfigInfo> | JsConfigInfo)): Promise<void> {
     const thenAction = (jsApiCheckInfo: any, resolve, reject) => {
@@ -590,7 +594,7 @@ export class Renderer {
         thenAction(getJsSignInfo, resolve, reject);
       }
     });
-  };
+  }
 
 
   /**
@@ -598,7 +602,7 @@ export class Renderer {
    * @param appId 应用的appId
    * @param jsApiList core.config中传入的js方法列表,此时必须传入,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
    * @param getJsSignInfo core.config的js验证参数数据,具体请参照文档 https://doc.yuanzhibang.com/#/open-app-develop/js-api-core?id=coreconfig
-   * @returns Promise 返回结果的异步回调 
+   * @returns Promise 返回结果的异步回调
    */
   static getAuthCode(appId: string, jsApiList: Array<string>, getJsSignInfo: Promise<JsConfigInfo> | JsConfigInfo): Promise<string> {
     return new Promise<string>((resolve, reject) => {
@@ -618,18 +622,18 @@ export class Renderer {
         reject(error);
       });
     });
-  };
+  }
 }
 
 export class IpcRendererWorkerMock {
   /**
- * 调试服务器地址
- */
+   * 调试服务器地址
+   */
   debuggerServerUrl: string;
 
   /**
-  * 调试服务器socket链接
-  */
+   * 调试服务器socket链接
+   */
   debuggerSocket: WebSocket | null = null;
 
   /**
@@ -663,14 +667,14 @@ export class IpcRendererWorkerMock {
 
   /**
    * 处理ws调试服务器发送来的消息
-   * @param message 
+   * @param message the message from ws message
    */
   processMessage(message: any) {
     const type = message.type;
     if (type === 'yzb_ipc_renderer_message' || type === 'message') {
       // 是callback回调
       const callbackMessage = {
-        identity: "native_setCallback_config",
+        identity: 'native_setCallback_config',
         result: message
       };
       yzb.runCallback(callbackMessage);
@@ -758,6 +762,7 @@ export class IpcRendererWorkerMock {
     };
 
     worker.sendPromise = (topic: string, topicMessage: any): Promise<any> => {
+      IpcMessageTopic.checkValid(topic);
       return new Promise<any>((resolve, reject) => {
         const config = {
           data: {
@@ -778,7 +783,9 @@ export class IpcRendererWorkerMock {
       });
     };
 
+    // tslint:disable-next-line: max-line-length
     worker.send = (topic: string, topicMessage: any = null, nextCallback: ((result: any) => void) | null = null, errorCallbck: ((error: any) => void) | null = null, completeCallback: (() => void) | null = null): void => {
+      IpcMessageTopic.checkValid(topic);
       const config: any = {
         data: {
           exe_name: worker.exeName,
@@ -870,7 +877,7 @@ export class IpcRendererWorkerMock {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
+    for (let i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() *
         charactersLength));
     }
