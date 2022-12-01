@@ -327,28 +327,56 @@ export class IpcRendererWorker {
    * @param topic 监听的topic
    * @param callback 收到topic消息的回调,message为topic消息的消息体
    */
-  on(topic: string, callback: (message: any) => void): void {
-    if (
-      this.messageCallbackMap.has(topic) ||
-      this.onceMessageCallbackMap.has(topic)
-    ) {
-      throw new Error(`you can not listen a topic twice! topic: ${topic}`);
+  on(topic: string | Array<string>, callback: (message: any) => void): void {
+    if (typeof topic === 'string') {
+      if (
+        this.messageCallbackMap.has(topic) ||
+        this.onceMessageCallbackMap.has(topic)
+      ) {
+        throw new Error(`you can not listen a topic twice! topic: ${topic}`);
+      }
+      this.messageCallbackMap.set(topic, callback);
+    } else {
+      topic.forEach((singleTopic: string) => {
+        if (
+          this.messageCallbackMap.has(singleTopic) ||
+          this.onceMessageCallbackMap.has(singleTopic)
+        ) {
+          throw new Error(`you can not listen a topic twice! topic: ${singleTopic}`);
+        }
+      });
+      topic.forEach((singleTopic: string) => {
+        this.messageCallbackMap.set(singleTopic, callback);
+      });
     }
-    this.messageCallbackMap.set(topic, callback);
   }
   /**
    * 和on方法的作用一致,只不过回调一次后自动移除该回调
    * @param topic 监听的topic
    * @param callback 收到topic消息的回调,message为topic消息的消息体
    */
-  once(topic: string, callback: (message: any) => void): void {
-    if (
-      this.messageCallbackMap.has(topic) ||
-      this.onceMessageCallbackMap.has(topic)
-    ) {
-      throw new Error(`you can not listen a topic twice! topic: ${topic}`);
+  once(topic: string | Array<string>, callback: (message: any) => void): void {
+    if (typeof topic === 'string') {
+      if (
+        this.messageCallbackMap.has(topic) ||
+        this.onceMessageCallbackMap.has(topic)
+      ) {
+        throw new Error(`you can not listen a topic twice! topic: ${topic}`);
+      }
+      this.onceMessageCallbackMap.set(topic, callback);
+    } else {
+      topic.forEach((singleTopic: string) => {
+        if (
+          this.messageCallbackMap.has(singleTopic) ||
+          this.onceMessageCallbackMap.has(singleTopic)
+        ) {
+          throw new Error(`you can not listen a topic twice! topic: ${singleTopic}`);
+        }
+      });
+      topic.forEach((singleTopic: string) => {
+        this.onceMessageCallbackMap.set(singleTopic, callback);
+      });
     }
-    this.onceMessageCallbackMap.set(topic, callback);
   }
   /**
    * 移除单个topic消息回调,不区分是通过on或者once添加的回调
