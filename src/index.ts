@@ -130,11 +130,11 @@ export class IpcRendererWorker {
   /**
    * 内部变量无需关注,on保存的回调保存map
    */
-  messageCallbackMap = new Map<string, (message: any) => void>();
+  messageCallbackMap = new Map<string, (message: any, topic?: string) => void>();
   /**
    * 内部变量无需关注,once保存的回调保存map
    */
-  onceMessageCallbackMap = new Map<string, (message: any) => void>();
+  onceMessageCallbackMap = new Map<string, (message: any, topic?: string) => void>();
 
   /**
    * 创建类实例
@@ -308,7 +308,7 @@ export class IpcRendererWorker {
     this.messageCallbackMap.forEach((callback, callbackTopic) => {
       if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
         if (callback) {
-          callback(message);
+          callback(message, topic);
         }
       }
     });
@@ -316,7 +316,7 @@ export class IpcRendererWorker {
     this.onceMessageCallbackMap.forEach((callback, callbackTopic) => {
       if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
         if (callback) {
-          callback(message);
+          callback(message, topic);
         }
         this.onceMessageCallbackMap.delete(callbackTopic);
       }
@@ -327,7 +327,7 @@ export class IpcRendererWorker {
    * @param topic 监听的topic
    * @param callback 收到topic消息的回调,message为topic消息的消息体
    */
-  on(topic: string | Array<string>, callback: (message: any) => void): void {
+  on(topic: string | Array<string>, callback: (message: any, topic?: string) => void): void {
     if (typeof topic === 'string') {
       if (
         this.messageCallbackMap.has(topic) ||
@@ -355,7 +355,7 @@ export class IpcRendererWorker {
    * @param topic 监听的topic
    * @param callback 收到topic消息的回调,message为topic消息的消息体
    */
-  once(topic: string | Array<string>, callback: (message: any) => void): void {
+  once(topic: string | Array<string>, callback: (message: any, topic?: string) => void): void {
     if (typeof topic === 'string') {
       if (
         this.messageCallbackMap.has(topic) ||
