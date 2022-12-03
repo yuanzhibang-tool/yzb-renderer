@@ -136,6 +136,9 @@ export class IpcRendererWorker {
    */
   onceMessageCallbackMap = new Map<string, (message: any, topic?: string) => void>();
 
+  // topic message callback of exe lifecycle 
+  lifecycleMessageCallbackMap = new Map<string, (message: any, topic?: string) => void>();
+
   /**
    * 创建类实例
    * @param exeName 进程名
@@ -232,7 +235,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onStart(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_START, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_START, callback);
   }
 
   /**
@@ -240,7 +243,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onWillInit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_INIT, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_INIT, callback);
   }
 
   /**
@@ -248,7 +251,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onInit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_INIT, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_INIT, callback);
   }
 
   /**
@@ -256,7 +259,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onWillExit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_EXIT, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_WILL_EXIT, callback);
   }
 
   /**
@@ -264,7 +267,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onExit(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_EXIT, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_EXIT, callback);
   }
 
   /**
@@ -272,7 +275,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onError(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_ERROR, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_ERROR, callback);
   }
 
   /**
@@ -280,7 +283,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onClose(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_CLOSE, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_CLOSE, callback);
   }
 
   /**
@@ -288,7 +291,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onStdError(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDERR, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDERR, callback);
   }
 
   /**
@@ -296,7 +299,7 @@ export class IpcRendererWorker {
    * @param callback 对应生命周期需要执行的回调
    */
   onStdOut(callback: (message: any) => void): void {
-    this.messageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDOUT, callback);
+    this.lifecycleMessageCallbackMap.set(ExtensionLifecycleEventMessageTopic.ON_STDOUT, callback);
   }
 
   /**
@@ -319,6 +322,14 @@ export class IpcRendererWorker {
           callback(message, topic);
         }
         this.onceMessageCallbackMap.delete(callbackTopic);
+      }
+    });
+
+    this.lifecycleMessageCallbackMap.forEach((callback, callbackTopic) => {
+      if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
+        if (callback) {
+          callback(message, topic);
+        }
       }
     });
   }
@@ -382,16 +393,29 @@ export class IpcRendererWorker {
    * 移除单个topic消息回调,不区分是通过on或者once添加的回调
    * @param topic 移除监听的topic
    */
-  removeListener(topic: string): void {
-    this.messageCallbackMap.delete(topic);
-    this.onceMessageCallbackMap.delete(topic);
+  removeListener(topic: string | Array<string>): void {
+    if (typeof topic === 'string') {
+      this.messageCallbackMap.delete(topic);
+      this.onceMessageCallbackMap.delete(topic);
+      this.lifecycleMessageCallbackMap.delete(topic);
+    }
+    else if (Array.isArray(topic)) {
+      topic.forEach((item) => {
+        this.messageCallbackMap.delete(item);
+        this.onceMessageCallbackMap.delete(item);
+        this.lifecycleMessageCallbackMap.delete(item);
+      });
+    }
   }
   /**
    * 移除所有监听的topic,不区分是通过on或者once添加的回调
    */
-  removeAllListener(): void {
+  removeAllListener(includeLifecycle = false): void {
     this.messageCallbackMap.clear();
     this.onceMessageCallbackMap.clear();
+    if (includeLifecycle) {
+      this.lifecycleMessageCallbackMap.clear();
+    }
   }
 
   /**
