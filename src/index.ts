@@ -130,14 +130,14 @@ export class IpcRendererWorker {
   /**
    * 内部变量无需关注,on保存的回调保存map
    */
-  messageCallbackMap = new Map<string, (message: any, topic?: string) => void>();
+  messageCallbackMap = new Map<string, (message: any, topic?: string, extra?: any) => void>();
   /**
    * 内部变量无需关注,once保存的回调保存map
    */
-  onceMessageCallbackMap = new Map<string, (message: any, topic?: string) => void>();
+  onceMessageCallbackMap = new Map<string, (message: any, topic?: string, extra?: any) => void>();
 
   // topic message callback of exe lifecycle 
-  lifecycleMessageCallbackMap = new Map<string, (message: any, topic?: string) => void>();
+  lifecycleMessageCallbackMap = new Map<string, (message: any, topic?: string, extra?: any) => void>();
 
   /**
    * 创建类实例
@@ -307,11 +307,11 @@ export class IpcRendererWorker {
    * @param topic 消息的topic
    * @param message topic消息的消息体
    */
-  processMessage(topic: string, message: any): void {
+  processMessage(topic: string, message: any, extra?: any): void {
     this.messageCallbackMap.forEach((callback, callbackTopic) => {
       if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
         if (callback) {
-          callback(message, topic);
+          callback(message, topic, extra);
         }
       }
     });
@@ -319,7 +319,7 @@ export class IpcRendererWorker {
     this.onceMessageCallbackMap.forEach((callback, callbackTopic) => {
       if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
         if (callback) {
-          callback(message, topic);
+          callback(message, topic, extra);
         }
         this.onceMessageCallbackMap.delete(callbackTopic);
       }
@@ -328,7 +328,7 @@ export class IpcRendererWorker {
     this.lifecycleMessageCallbackMap.forEach((callback, callbackTopic) => {
       if (IpcMessageTopic.isSubTopic(callbackTopic, topic)) {
         if (callback) {
-          callback(message, topic);
+          callback(message, topic, extra);
         }
       }
     });
@@ -338,7 +338,7 @@ export class IpcRendererWorker {
    * @param topic 监听的topic
    * @param callback 收到topic消息的回调,message为topic消息的消息体
    */
-  on(topic: string | Array<string>, callback: (message: any, topic?: string) => void): void {
+  on(topic: string | Array<string>, callback: (message: any, topic?: string, extra?: any) => void): void {
     if (typeof topic === 'string') {
       if (
         this.messageCallbackMap.has(topic) ||
@@ -530,11 +530,12 @@ export class IpcRenderer {
               const messageData = messageObject.data;
               const messageTopic = messageData.topic;
               const messageTopicMessage = messageData.message;
+              const messageExtra = messageData.extra;
               // 查找对应的回调,有则执行,无则不执行
               if (this.messageWorkerMap.has(exeName)) {
                 const worker = this.messageWorkerMap.get(exeName);
                 if (worker !== null && typeof worker === 'object') {
-                  worker.processMessage(messageTopic, messageTopicMessage);
+                  worker.processMessage(messageTopic, messageTopicMessage, messageExtra);
                 } else {
                   this.messageWorkerMap.delete(exeName);
                 }
